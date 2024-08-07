@@ -1,5 +1,7 @@
 package com.example.board.service;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.board.model.product.Product;
@@ -14,8 +16,8 @@ public class ProductService {
 	
 	//상품 등록
 	@Transactional
-	public void UploadProduct(Product product) {
-		productRepository.save(product);
+	public Product UploadProduct(Product product) {
+		return productRepository.save(product);
 	}
 	
 	//상품 상세 검색
