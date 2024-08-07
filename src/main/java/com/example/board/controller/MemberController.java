@@ -10,13 +10,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
+import com.example.board.model.product.Product;
 import com.example.board.service.MemberService;
+import com.example.board.service.ProductService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,10 +29,12 @@ import jakarta.servlet.http.HttpSession;
 public class MemberController {
 	
 	private final MemberService memberService;
+	private final ProductService productService;
 	
 	@Autowired
-	public MemberController(MemberService memberService) {
+	public MemberController(MemberService memberService, ProductService productService) {
 		this.memberService = memberService;
+		this.productService = productService; // ProductService 초기화
 	}
 	
 	//유저 등록
@@ -89,6 +92,20 @@ public class MemberController {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인에 실패했습니다.");
 	    }
 	}
+	
+	 // 로그인 한 사용자만 물품 등록 가능
+    @PostMapping("/products")
+    public ResponseEntity<String> registerProduct(@RequestBody Product product, HttpSession session) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 후 물품을 등록할 수 있습니다.");
+        }
+
+        // 로그인된 사용자에 대한 추가 작업이 필요하다면 여기서 처리
+        productService.UploadProduct(product); // ProductService를 통해 물품 저장
+        return ResponseEntity.status(HttpStatus.CREATED).body("물품이 성공적으로 등록되었습니다.");
+    }
 
 	//로그아웃 처리
 		@GetMapping("/logout")
