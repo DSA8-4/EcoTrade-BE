@@ -28,7 +28,7 @@ public class Product {
 	
 	private Long price;					// 상품 가격
 	private Long hit;				    // 상품 조회수
-	private Long like;					// 상품 좋아요 수
+	private Long good;					// 상품 좋아요 수
 	private LocalDateTime created_time; // 상품 작성일
 	
 	public void addHit() {
