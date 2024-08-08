@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -27,12 +28,13 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class ProductController {
 	private final ProductService productService;
 	
 	//상품 등록
 	@PostMapping("/new")
-	public ResponseEntity<Product> newProducts(@Valid @RequestBody ProductWriteForm productWriteForm) {
+	public ResponseEntity<Product> newProducts(@Valid  @RequestBody ProductWriteForm productWriteForm) {
 	    
 		Product product = productWriteForm.toProduct(productWriteForm);
 		
