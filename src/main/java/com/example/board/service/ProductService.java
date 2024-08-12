@@ -3,9 +3,14 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.example.board.model.product.AttachedImage;
 import com.example.board.model.product.Product;
+import com.example.board.repository.ImageRepository;
 import com.example.board.repository.ProductRepository;
+import com.example.board.util.ImageService;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -13,11 +18,32 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class ProductService {
 	private final ProductRepository productRepository;
+	private final ImageRepository imageRepository;
+	private final ImageService imageService;
 	
 	//상품 등록
 	@Transactional
-	public Product UploadProduct(Product product) {
-		return productRepository.save(product);
+	public Product uploadProduct(Product product, MultipartFile[] files) {
+	    // 상품 저장
+	    Product savedProduct = productRepository.save(product);
+
+	    // 파일 처리
+	    if (files != null) {
+	        for (MultipartFile file : files) {
+	            // 파일 저장 로직 추가
+	            AttachedImage attachedImage = new AttachedImage();
+	            attachedImage.setProduct(savedProduct);
+	            attachedImage.setImage_size(file.getSize()); // 예시: 파일 데이터를 byte[]로 변환
+	            // 이미지 메타데이터 설정
+	            attachedImage.setSaved_image(file.getOriginalFilename());
+	            
+//	            attachedImage.setFileType(file.getContentType());
+	            imageRepository.save(attachedImage); // 이미지 저장
+	            
+	        }
+	    }
+
+	    return savedProduct;
 	}
 	
 	//상품 상세 검색
@@ -27,23 +53,20 @@ public class ProductService {
 	}
 	
 	//상품 수정
-//	@Transactional
-//	public void updateProduct(Product updateProduct) {
-//		Product findProduct = findProduct(updateProduct.getProduct_id());
-//		
-//		findProduct.setProduct_title(updateProduct.getProduct_title());
-//		findProduct.setProduct_contents(updateProduct.getProduct_contents());
-//		findProduct.setProduct_price(updateProduct.getProduct_price());
-//		findProduct.setProduct_hit(updateProduct.getProduct_hit());
-//		
-//		productRepository.save(findProduct);
-//	}
-	
+	@Transactional
+	public void updateProduct(Product updateProduct, boolean isFileRemoved, MultipartFile file) {
+		Product findProduct = findProduct(updateProduct.getProduct_id());
+		
+		findProduct.setTitle(updateProduct.getTitle());
+		findProduct.setContents(updateProduct.getContents());
+		findProduct.setPrice(updateProduct.getPrice());
+	}
 	//게시물 삭제
 	@Transactional
 	public void removeProduct(Product product) {
 		productRepository.deleteById(product.getProduct_id());
 	}
+	
 	
 }
 
