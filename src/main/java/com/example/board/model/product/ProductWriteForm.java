@@ -21,6 +21,8 @@ public class ProductWriteForm {
 	@NotNull
 	private Long price;					// 상품 가격
 	
+	
+	
 	public static Product toProduct(ProductWriteForm productWriteForm) {
 		Product product = new Product();
 		
