@@ -2,6 +2,8 @@ package com.example.board.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +22,7 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
 	private final ImageService imageService;
+
 	
 	//상품 등록
 	@Transactional
@@ -67,6 +70,32 @@ public class ProductService {
 		productRepository.deleteById(product.getProduct_id());
 	}
 	
+
+	//게시글 전체 목록
+		public Page<Product> findAll(Pageable pageable) {
+			Page<Product> page = productRepository.findAll(pageable);
+			return page;
+		}
+
+		public AttachedImage findFileByProductId(Product product) {
+			AttachedImage attachedImage = imageRepository.findByProduct(product);
+			return attachedImage;
+		}
+
+		public AttachedImage findFileByAttachedImageId(Long id) {
+			AttachedImage attachedImage = imageRepository.findById(id).get();
+			return attachedImage;
+		}
+
+		public int getTotal() {
+			return (int)imageRepository.count();
+		}
+
+		public Page<Product> findSearch(String searchText, Pageable pageable) {
+			Page<Product> searchList = productRepository.findByTitleContaining(searchText, pageable);
+			return searchList;
+		}
+
 	
 }
 
