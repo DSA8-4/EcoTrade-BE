@@ -1,4 +1,5 @@
 package com.example.board.service;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 public class ProductService {
+	
+	
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
 	private final ImageService imageService;
@@ -72,10 +75,14 @@ public class ProductService {
 	
 
 	//게시글 전체 목록
-		public Page<Product> findAll(Pageable pageable) {
-			Page<Product> page = productRepository.findAll(pageable);
-			return page;
-		}
+	public Page<Product> findAll(Pageable pageable) {
+	    Page<Product> page = productRepository.findAll(pageable);
+	    page.forEach(product -> {
+	        List<AttachedImage> images = (List<AttachedImage>) imageRepository.findByProduct(product);
+	        product.setImages(images); // 이미지 설정
+	    });
+	    return page;
+	}
 
 		public AttachedImage findFileByProductId(Product product) {
 			AttachedImage attachedImage = imageRepository.findByProduct(product);

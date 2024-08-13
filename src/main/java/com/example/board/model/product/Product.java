@@ -1,14 +1,18 @@
 package com.example.board.model.product;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.example.board.model.member.Member;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.Data;
 
 @Data
@@ -31,6 +35,9 @@ public class Product {
 	private Long heart;					// 상품 좋아요 수
 	private LocalDateTime created_time; // 상품 작성일
 	
+	 @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	 private List<AttachedImage> images; // 이미지 목록 추가
+	 
 	public void addHit() {
 		this.hit++;
 	}
