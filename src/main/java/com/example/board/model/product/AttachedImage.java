@@ -20,7 +20,7 @@ public class AttachedImage {
 	private Long attachedImage_id;
 	
 	@ManyToOne
-	@JoinColumn(name="board_id")
+	@JoinColumn(name="product_id")
 	private Product product;
 	
 	private String original_image;
