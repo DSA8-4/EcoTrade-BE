@@ -5,11 +5,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.board.model.product.AttachedImage;
 
-
+@Component
 public class ImageService {
     @Value("${file.upload.path}")
     private String uploadPath;
