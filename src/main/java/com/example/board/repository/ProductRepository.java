@@ -10,5 +10,5 @@ import com.example.board.model.product.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     // 검색 결과: title 필드를 기준으로 검색
-	Page<Product> findByTitleContaining(String title, Pageable pageable); // 제목 검색
+	List<Product> findByTitleContaining(String searchText); // 제목 검색
 }
