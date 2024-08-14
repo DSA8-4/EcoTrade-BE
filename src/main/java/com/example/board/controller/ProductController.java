@@ -96,39 +96,45 @@ public class ProductController {
 //        int totalRecordsCount;
 //        int totalPageCount;
 	@GetMapping("/list")
-	public ResponseEntity<Map<String, Object>> list(Pageable pageable, @RequestParam(value = "searchText", required = false) String searchText) {
-	    // 결과를 담을 맵
-	    Map<String, Object> response = new HashMap<>();
-	    
-	    Page<Product> productList;
+	public ResponseEntity<List<Product>> list(@RequestParam(value = "searchText", required = false) String searchText) {
+	    List<Product> productList;
 
-	    // 검색어가 있을 경우, 검색 기능 사용
 	    if (searchText != null && !searchText.isEmpty()) {
-	        productList = productService.findSearch(searchText, pageable);
+	        productList = productService.findSearch(searchText);
+	        log.info("Returning product list1: {}", productList);
 	    } else {
-	        // 검색어가 없을 경우 전체 목록 조회
-	        productList = productService.findAll(pageable);
+	        productList = productService.findAll();
+	        log.info("Returning product list2: {}", productList);
 	    }
+//	    log.info("Returning product list: {}", productList);
 
-	    // 페이지 정보 및 결과 설정
-	    int totalRecordsCount = (int) productList.getTotalElements();
-	    int totalPageCount = productList.getTotalPages();
-	    
-	    // 페이지네비게이터 생성 (여기서는 간단하게 예시로만 설정)
-	    PageNavigator navi = new PageNavigator(10, 5, pageable.getPageNumber(), totalRecordsCount, totalPageCount);
-
-	    // 응답에 필요한 정보 추가
-	    response.put("productList", productList.getContent());
-	    response.put("currentPage", productList.getNumber() + 1);
-	    response.put("totalItems", totalRecordsCount);
-	    response.put("totalPages", totalPageCount);
-	    response.put("navi", navi);
-	    response.put("searchText", searchText);
-
-	    // 로깅
-	    log.info("Returning product list: {}", response);
-
-	    return ResponseEntity.ok(response);
+	    return ResponseEntity.ok(productList);
 	}
 
+	    // 검색어가 있을 경우, 검색 기능 사용
+//	    if (searchText != null && !searchText.isEmpty()) {
+//	        productList = productService.findSearch(searchText, pageable);
+//	    } else {
+//	        // 검색어가 없을 경우 전체 목록 조회
+//	        productList = productService.findAll(pageable);
+//	    }
+
+	    // 페이지 정보 및 결과 설정
+//	    int totalRecordsCount = (int) productList.getTotalElements();
+//	    int totalPageCount = productList.getTotalPages();
+	    
+	    // 페이지네비게이터 생성 (여기서는 간단하게 예시로만 설정)
+//	    PageNavigator navi = new PageNavigator(10, 5, pageable.getPageNumber(), totalRecordsCount, totalPageCount);
+
+	    // 응답에 필요한 정보 추가
+//	    response.put("productList", productList.getContent());
+//	    response.put("currentPage", productList.getNumber() + 1);
+//	    response.put("totalItems", totalRecordsCount);
+//	    response.put("totalPages", totalPageCount);
+//	    response.put("navi", navi);
+//	    response.put("searchText", searchText);
+
+	    // 로깅
+	
 }
+
