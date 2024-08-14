@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -57,23 +57,30 @@ public class ProductController {
 	
 	
 	//상품 등록
-
 	@PostMapping("/new")
 	public ResponseEntity<Product> newProduct(
 	        @RequestParam("title") String title,
 	        @RequestParam("contents") String contents,
 	        @RequestParam("price") Long price,
-	        @RequestParam(value = "files", required = false) MultipartFile[] files) {
-
+	        @RequestParam(value = "created_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime created_time
+	        //@RequestParam(value = "files", required = false) MultipartFile[] files
+	        ) {
+		
+		if (created_time == null) {
+	        created_time = LocalDateTime.now();
+	    }
+		
 	    Product product = new Product();
 	    product.setTitle(title);
 	    product.setContents(contents);
 	    product.setPrice(price);
+	    product.setCreated_time(created_time);
 
 	    try {
 	        // 상품 등록 처리 (파일 업로드 포함)
 
-	        Product createdProduct = productService.uploadProduct(product, files);
+//	        Product createdProduct = productService.uploadProduct(product, files);
+	        Product createdProduct = productService.uploadProduct(product);
 
 	        return ResponseEntity.ok(createdProduct);
 	    } catch (Exception e) {

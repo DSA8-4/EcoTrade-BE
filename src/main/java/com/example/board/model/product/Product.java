@@ -6,6 +6,7 @@ import java.util.List;
 import com.example.board.model.member.Member;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -34,9 +35,10 @@ public class Product {
     private Long price;                // 상품 가격
     private Long hit = 0L;             // 상품 조회수 초기값 설정
     private Long heart = 0L;           // 상품 좋아요 수 초기값 설정
+    @Column(name = "created_time", nullable = false)
     private LocalDateTime created_time; // 상품 작성일
     
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttachedImage> images; // 이미지 목록 추가
     
     // 조회수 증가 메서드

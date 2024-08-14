@@ -29,20 +29,21 @@ public class ProductService {
 
 	// 상품 등록
 	@Transactional
-	public Product uploadProduct(Product product, MultipartFile[] files) {
+	public Product uploadProduct(Product product) {
 	    // 상품 저장
 	    Product savedProduct = productRepository.save(product);
 
 	    // 파일 처리
-	    if (files != null) {
-	        for (MultipartFile file : files) {
-	            AttachedImage attachedImage = new AttachedImage();
-	            attachedImage.setProduct(savedProduct);
-	            attachedImage.setImage_size(file.getSize());
-	            attachedImage.setSaved_image(file.getOriginalFilename());
-	            imageRepository.save(attachedImage); // 이미지 저장
-	        }
-	    }
+//	    if (files != null) {
+//	        for (MultipartFile file : files) {
+//	            AttachedImage attachedImage = new AttachedImage();
+//	            attachedImage.setOriginal_image(file.getOriginalFilename());
+//	            attachedImage.setProduct(savedProduct);
+//	            attachedImage.setImage_size(file.getSize());
+//	            attachedImage.setSaved_image(file.getOriginalFilename());
+//	            imageRepository.save(attachedImage); // 이미지 저장
+//	        }
+//	    }
 
 	    return savedProduct;
 	}
@@ -61,6 +62,7 @@ public class ProductService {
 		findProduct.setTitle(updateProduct.getTitle());
 		findProduct.setContents(updateProduct.getContents());
 		findProduct.setPrice(updateProduct.getPrice());
+		
 	}
 
 	// 게시물 삭제
