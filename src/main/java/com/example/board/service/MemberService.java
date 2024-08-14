@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.board.dto.MemberProfileDto;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
 import com.example.board.repository.MemberRepository;
@@ -40,8 +41,8 @@ public class MemberService {
 		return member.orElse(null);
 	}
 	 @Transactional
-	    public boolean deleteMember(String memberId) {
-	        Optional<Member> member = memberRepository.findById(memberId);
+	    public boolean deleteMember(String member_id) {
+	        Optional<Member> member = memberRepository.findById(member_id);
 	        if (member.isPresent()) {
 	            memberRepository.delete(member.get());
 	            return true;
@@ -50,8 +51,8 @@ public class MemberService {
 	    }
 	 
 	  @Transactional
-	    public Member updateMember(String memberId, Member updatedMember) {
-	        Optional<Member> existingMember = memberRepository.findById(memberId);
+	    public Member updateMember(String member_id, Member updatedMember) {
+	        Optional<Member> existingMember = memberRepository.findById(member_id);
 	        if (existingMember.isPresent()) {
 	            Member memberToUpdate = existingMember.get();
 	            
@@ -79,5 +80,26 @@ public class MemberService {
 		    }
 		    return false;
 		}
+	  
+	  /**
+	     * 회원 ID를 기반으로 회원 정보를 조회하여 DTO로 변환합니다.
+	     *
+	     * @param memberId 조회할 회원의 ID
+	     * @return 회원 정보를 담고 있는 MemberProfileDto 객체
+	     */
+	    public MemberProfileDto getMemberProfile(String member_id) {
+	        // 회원 정보를 데이터베이스에서 조회
+	        Member member = memberRepository.findById(member_id)
+	                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+	        // Member 엔티티를 DTO로 변환하여 반환
+	        return new MemberProfileDto(
+	            member.getMember_id(),
+	            member.getName(),
+	            member.getBirth(),
+	            member.getEmail(),
+	            member.getEco_point()
+	        );
+	    }
 	  
 }

@@ -3,6 +3,7 @@ package com.example.board.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,9 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.board.dto.MemberProfileDto;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
@@ -25,6 +28,8 @@ import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api/members")
+
+
 public class MemberController {
 	
 	private final MemberService memberService;
@@ -79,14 +84,34 @@ public class MemberController {
 
 	}
 	
+	
+	
 	//로그인
 	@PostMapping("/login")
 	public ResponseEntity<String> login(@RequestBody LoginForm loginForm, HttpSession session) {
-	    if (memberService.login(loginForm.getMember_id(), loginForm.getPassword())) {
-	        session.setAttribute("loggedInUser", loginForm.getMember_id());
-	        return ResponseEntity.ok("로그인 성공");
+	    try {
+	        boolean isAuthenticated = memberService.login(loginForm.getMember_id(), loginForm.getPassword());
+	        if (isAuthenticated) {
+	            session.setAttribute("loggedInUser", loginForm.getMember_id());
+	            return ResponseEntity.ok("로그인 성공");
+	        } else {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인에 실패했습니다.");
+	        }
+	    } catch (Exception e) {
+	        // 예외 로그 출력
+	        System.err.println("Exception occurred: " + e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
+	    }
+	}
+	//마이페이지
+    
+	@GetMapping("/mypage")
+	public ResponseEntity<MemberProfileDto> getMemberProfile(@RequestParam("member_id") String member_id) {
+	    MemberProfileDto profile = memberService.getMemberProfile(member_id);
+	    if (profile != null) {
+	        return ResponseEntity.ok(profile);
 	    } else {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인에 실패했습니다.");
+	        return ResponseEntity.notFound().build();
 	    }
 	}
 
