@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.board.dto.MemberProfileDto;
+import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
 import com.example.board.repository.MemberRepository;
@@ -50,25 +51,24 @@ public class MemberService {
 	        return false;
 	    }
 	 
-	  @Transactional
-	    public Member updateMember(String member_id, Member updatedMember) {
-	        Optional<Member> existingMember = memberRepository.findById(member_id);
-	        if (existingMember.isPresent()) {
-	            Member memberToUpdate = existingMember.get();
-	            
-	            // 업데이트할 필드들을 설정
-	            memberToUpdate.setPassword(updatedMember.getPassword());
-	            memberToUpdate.setName(updatedMember.getName());
-	            memberToUpdate.setBirth(updatedMember.getBirth());
-	            memberToUpdate.setEmail(updatedMember.getEmail());
-	            memberToUpdate.setEco_point(updatedMember.getEco_point());
-	            
-	            
-	            return memberRepository.save(memberToUpdate);
-	        }
-	        return null;
-	}
-	  
+	 @Transactional
+	 public Member updateMemberInfo(String member_id, MemberUpdateRequest updateRequest) {
+		    Optional<Member> existingMemberOpt = memberRepository.findById(member_id);
+		    if (existingMemberOpt.isPresent()) {
+		        Member memberToUpdate = existingMemberOpt.get();
+		        
+		        // 업데이트할 필드들을 설정
+		        if (updateRequest.getName() != null) memberToUpdate.setName(updateRequest.getName());
+		        if (updateRequest.getBirth() != null) memberToUpdate.setBirth(updateRequest.getBirth());
+		        if (updateRequest.getEmail() != null) memberToUpdate.setEmail(updateRequest.getEmail());
+		        if (updateRequest.getNewPassword() != null) memberToUpdate.setPassword(updateRequest.getNewPassword());
+
+		        memberRepository.save(memberToUpdate);
+		        return memberToUpdate; // 성공적으로 업데이트된 Member 객체 반환
+		    }
+		    return null; // 업데이트 실패
+		}
+
 	  public boolean login(String member_id, String password) {
 		    Optional<Member> memberOpt = memberRepository.findById(member_id);
 		    if (memberOpt.isPresent()) {
@@ -101,5 +101,27 @@ public class MemberService {
 	            member.getEco_point()
 	        );
 	    }
+	    
+	    //비밀번호 수정
+	    @Transactional
+	    public boolean updatePassword(String member_id, String currentPassword, String newPassword, String confirmNewPassword) {
+	        Optional<Member> memberOpt = memberRepository.findById(member_id);
+	        if (memberOpt.isPresent()) {
+	            Member member = memberOpt.get();
+
+	            if (!member.getPassword().equals(currentPassword)) {
+	                return false; // 현재 비밀번호가 일치하지 않음
+	            }
+	            if (!newPassword.equals(confirmNewPassword)) {
+	                return false; // 새로운 비밀번호와 확인 비밀번호가 일치하지 않음
+	            }
+
+	            member.setPassword(newPassword);
+	            memberRepository.save(member);
+	            return true;
+	        }
+	        return false;
+	    }
+
 	  
 }

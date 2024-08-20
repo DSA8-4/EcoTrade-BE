@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.board.dto.MemberProfileDto;
+import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
@@ -73,27 +74,42 @@ public class MemberController {
 	
 	//유저 정보 수정
 	@PutMapping("/{member_id}")
-	      public ResponseEntity<Member> updateMember(@PathVariable("member_id") String member_id, 
-	    		  									 @RequestBody Member updatedMember) {
-	         Member member = memberService.updateMember(member_id, updatedMember);
-	         if (member != null) {
-	              return ResponseEntity.ok(member);
-	          } else {
-	              return ResponseEntity.notFound().build();
-	          }
-
+	public ResponseEntity<Member> updateMemberInfo(
+	        @PathVariable("member_id") String member_id,
+	        @RequestBody MemberUpdateRequest updateRequest) {
+	    try {
+	        Member updatedMember = memberService.updateMemberInfo(member_id, updateRequest);
+	        if (updatedMember != null) {
+	            return ResponseEntity.ok(updatedMember);
+	        } else {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+	        }
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
 	}
+
 	
 	
 	
-	//로그인
+	// 로그인
 	@PostMapping("/login")
 	public ResponseEntity<String> login(@RequestBody LoginForm loginForm, HttpSession session) {
 	    try {
 	        boolean isAuthenticated = memberService.login(loginForm.getMember_id(), loginForm.getPassword());
 	        if (isAuthenticated) {
+	            // 로그인 성공 시 세션에 사용자 ID 저장
 	            session.setAttribute("loggedInUser", loginForm.getMember_id());
-	            return ResponseEntity.ok("로그인 성공");
+
+	            // 로그인한 사용자 정보를 가져오기
+	            Member member = memberService.findMemberById(loginForm.getMember_id());
+
+	            // Member 객체의 name만 반환
+	            if (member != null) {
+	                return ResponseEntity.ok(member.getName());
+	            } else {
+	                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원 정보를 찾을 수 없습니다.");
+	            }
 	        } else {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인에 실패했습니다.");
 	        }
@@ -103,8 +119,9 @@ public class MemberController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
 	    }
 	}
+
+	
 	//마이페이지
-    
 	@GetMapping("/mypage")
 	public ResponseEntity<MemberProfileDto> getMemberProfile(@RequestParam("member_id") String member_id) {
 	    MemberProfileDto profile = memberService.getMemberProfile(member_id);
