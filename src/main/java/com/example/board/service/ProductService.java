@@ -7,12 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,7 +16,6 @@ import com.example.board.model.product.AttachedImage;
 import com.example.board.model.product.Product;
 import com.example.board.repository.ImageRepository;
 import com.example.board.repository.ProductRepository;
-import com.example.board.util.ImageService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +26,6 @@ public class ProductService {
 	
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
-	private final ImageService imageService;
-//	private final String uploadPath;
 	@Value("${file.upload.path}")
     private String uploadPath;
 	

@@ -24,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.board.model.product.Product;
 import com.example.board.service.ProductService;
-import com.example.board.util.ImageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://127.0.0.1:5500")
 public class ProductController {
-	private final ImageService imageService;
 	private final ProductService productService;
 	@Value("${file.upload.path}")
     private String uploadPath;
