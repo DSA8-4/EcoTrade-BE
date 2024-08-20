@@ -2,9 +2,15 @@ package com.example.board.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,27 +32,53 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
 	private final ImageService imageService;
+//	private final String uploadPath;
+	@Value("${file.upload.path}")
+    private String uploadPath;
+	
 
 	// 상품 등록
 	@Transactional
-	public Product uploadProduct(Product product) {
-	    // 상품 저장
-	    Product savedProduct = productRepository.save(product);
+    public Product uploadProduct(Product product, MultipartFile[] files) {
+        // 상품 저장
+        Product savedProduct = productRepository.save(product);
 
-	    // 파일 처리
-//	    if (files != null) {
-//	        for (MultipartFile file : files) {
-//	            AttachedImage attachedImage = new AttachedImage();
-//	            attachedImage.setOriginal_image(file.getOriginalFilename());
-//	            attachedImage.setProduct(savedProduct);
-//	            attachedImage.setImage_size(file.getSize());
-//	            attachedImage.setSaved_image(file.getOriginalFilename());
-//	            imageRepository.save(attachedImage); // 이미지 저장
-//	        }
-//	    }
+        // 파일 처리
+        if (files != null) {
+            for (MultipartFile file : files) {
+                String originalFileName = file.getOriginalFilename();
+                String uniqueFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+                Path filePath = Paths.get(uploadPath, uniqueFileName);
 
-	    return savedProduct;
-	}
+                try {
+                    // 디렉토리가 존재하지 않을 경우 생성
+                    if (!Files.exists(filePath.getParent())) {
+                        Files.createDirectories(filePath.getParent());
+                    }
+
+                    // 파일 저장
+                    Files.write(filePath, file.getBytes());
+
+                    // AttachedImage 생성 및 저장
+                    AttachedImage attachedImage = new AttachedImage();
+                    attachedImage.setOriginal_image(originalFileName);
+                    attachedImage.setSaved_image(uniqueFileName);
+                    attachedImage.setImage_size(file.getSize());
+                    attachedImage.setFilePath(filePath.toString());  // 파일의 절대 경로를 저장
+                    attachedImage.setProduct(savedProduct);
+                    attachedImage.setFileName(product.getTitle());
+                    imageRepository.save(attachedImage);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("파일 저장에 실패했습니다.", e);
+                }
+            }
+        }
+
+        return savedProduct;
+    }
+
 	
 	// 상품 상세 검색
 	public Product findProduct(Long id) {

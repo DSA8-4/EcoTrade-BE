@@ -1,5 +1,7 @@
 package com.example.board.model.product;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,11 +23,15 @@ public class AttachedImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long attachedImage_id;
-
+    
+    private String Original_image;
+    private Long Image_size;
+    private String Saved_image;
     private String fileName;
     private String filePath;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "product_id")
     private Product product;
 }
