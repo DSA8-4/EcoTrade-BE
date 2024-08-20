@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
-
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
 
@@ -28,11 +27,22 @@ public class ChatService {
         return chatRoomRepository.findByName(name);
     }
 
+    public ChatRoom getRoomById(Long id) {
+    	return chatRoomRepository.findById(id).get();
+    }
+    
+    public List<ChatRoom> getAllRooms() {
+    	return chatRoomRepository.findAll();
+    }
+    
+
+    public List<ChatMessage> getMessagesByChatRoomId(Long chatRoomId) {
+        return chatMessageRepository.findByChatRoomId(chatRoomId);
+    }
+    
+    
     public void saveMessage(ChatMessage message) {
         chatMessageRepository.save(message);
     }
 
-    public List<ChatMessage> getMessagesForRoom(ChatRoom chatRoom) {
-        return chatMessageRepository.findByChatRoom(chatRoom);
-    }
 }

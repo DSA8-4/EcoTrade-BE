@@ -9,4 +9,5 @@ import com.example.board.model.chat.ChatRoom;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     List<ChatMessage> findByChatRoom(ChatRoom chatRoom);
+    List<ChatMessage> findByChatRoomId(Long chatRoomId);
 }
