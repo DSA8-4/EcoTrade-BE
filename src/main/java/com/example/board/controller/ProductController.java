@@ -100,6 +100,4 @@ public class ProductController {
 
 	    return new ResponseEntity<>(resource, headers, HttpStatus.OK);
 	}
-
-
 }
