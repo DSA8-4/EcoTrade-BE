@@ -93,8 +93,6 @@ public class MemberController {
         }
     }
 
-
-
  // 로그인
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginForm loginForm, HttpSession session) {
@@ -122,6 +120,7 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    
     //마이페이지
     @GetMapping("/mypage")
     public ResponseEntity<MemberProfileDto> getMemberProfile(HttpSession session) {

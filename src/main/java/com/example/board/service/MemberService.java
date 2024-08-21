@@ -25,7 +25,7 @@ public class MemberService {
     public void saveMember(MemberJoinForm memberJoinForm) {
         Member member = new Member();
         member.setMember_id(memberJoinForm.getMember_id());
-        member.setPassword(PasswordUtils.hashPassword(memberJoinForm.getPassword())); // 비밀번호 해시화
+        member.setPassword(memberJoinForm.getPassword()); // 비밀번호 해시화
         member.setName(memberJoinForm.getName());
         member.setBirth(memberJoinForm.getBirth());
         member.setEmail(memberJoinForm.getEmail());
