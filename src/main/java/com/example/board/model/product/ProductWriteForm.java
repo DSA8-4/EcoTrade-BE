@@ -1,12 +1,12 @@
 package com.example.board.model.product;
 
-import java.time.LocalDateTime;
-
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter @Setter @ToString
 public class ProductWriteForm {
@@ -16,11 +16,10 @@ public class ProductWriteForm {
 	
 	@Size(min = 4)
 	private String contents;			// 상품 내용
-	
-	@NotNull
+
 	private Long price;					// 상품 가격
-	
-	
+
+	private List<String> productImages;  // 이미지 목록 추가
 	
 	public static Product toProduct(ProductWriteForm productWriteForm) {
 		Product product = new Product();
@@ -31,7 +30,7 @@ public class ProductWriteForm {
 		product.setHit(0L);
 		product.setHeart(0L);
 		product.setCreated_time(LocalDateTime.now());
-		
+
 		return product;
 	}
 }

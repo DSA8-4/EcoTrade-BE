@@ -1,38 +1,31 @@
 package com.example.board.controller;
 
+import com.example.board.model.product.Image;
+import com.example.board.model.product.Product;
+import com.example.board.model.product.ProductWriteForm;
+import com.example.board.service.ProductService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.example.board.model.product.Product;
-import com.example.board.service.ProductService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://127.0.0.1:5500")
+//@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class ProductController {
 	private final ProductService productService;
 	@Value("${file.upload.path}")
@@ -41,28 +34,29 @@ public class ProductController {
 
 	// 상품 등록
 	@PostMapping("/new")
-	public ResponseEntity<Product> newProduct(@RequestParam("title") String title,
-			@RequestParam("contents") String contents, @RequestParam("price") Long price,
-			@RequestParam(value = "created_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime created_time,
-			@RequestParam(value = "files", required = false) MultipartFile[] files) {
-
-		if (created_time == null) {
-			created_time = LocalDateTime.now();
-		}
-
-		Product product = new Product();
-		product.setTitle(title);
-		product.setContents(contents);
-		product.setPrice(price);
-		product.setCreated_time(created_time);
-
+	public ResponseEntity<Product> newProduct(@RequestBody ProductWriteForm productWriteForm) {
 		try {
-			// 상품 등록 처리 (파일 업로드 포함)
-			Product createdProduct = productService.uploadProduct(product, files);
+			log.info("product: {}", productWriteForm);
+			// Convert ProductWriteForm to Product entity
+			Product product = ProductWriteForm.toProduct(productWriteForm);
+
+			// Save product using service
+			Product createdProduct = productService.uploadProduct(product);
+
+			// Handle images
+			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
+				List<Image> images = productWriteForm.getProductImages().stream()
+						.map(url -> new Image(url, createdProduct))
+						.collect(Collectors.toList());
+
+				// Save images
+				productService.saveImages(images);
+				createdProduct.setProductImages(images);
+			}
 
 			return ResponseEntity.ok(createdProduct);
 		} catch (Exception e) {
-			log.error("상품 등록 중 오류 발생", e);
+			log.error("Error occurred while registering product", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
