@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
-//@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class ProductController {
 	private final ProductService productService;
 	@Value("${file.upload.path}")
@@ -37,13 +36,12 @@ public class ProductController {
 	public ResponseEntity<Product> newProduct(@RequestBody ProductWriteForm productWriteForm) {
 		try {
 			log.info("product: {}", productWriteForm);
-			// Convert ProductWriteForm to Product entity
+
 			Product product = ProductWriteForm.toProduct(productWriteForm);
 
-			// Save product using service
 			Product createdProduct = productService.uploadProduct(product);
 
-			// Handle images
+
 			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
 				List<Image> images = productWriteForm.getProductImages().stream()
 						.map(url -> new Image(url, createdProduct))
