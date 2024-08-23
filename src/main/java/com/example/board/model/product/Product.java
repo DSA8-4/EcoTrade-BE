@@ -1,22 +1,12 @@
 package com.example.board.model.product;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.example.board.model.member.Member;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -41,25 +31,11 @@ public class Product {
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<AttachedImage> images; // 이미지 목록 추가
+    private List<Image> productImages; // 이미지 목록 추가
     
     // 조회수 증가 메서드
     public void addHit() {
         this.hit++;
     }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "product_id=" + product_id +
-                ", title='" + title + '\'' +
-                ", contents='" + contents + '\'' +
-                ", price=" + price +
-                ", hit=" + hit +
-                ", heart=" + heart +
-                ", created_time=" + created_time +
-                ", imagesCount=" + (images != null ? images.size() : 0) +  // 이미지 개수 출력
-                ", memberId=" + (member != null ? member.getMember_id() : "null") +  // member 정보 중 ID만 출력
-                '}';
-    }
 }
