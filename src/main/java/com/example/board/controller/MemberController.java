@@ -178,17 +178,33 @@ public class MemberController {
     
     // 마이페이지 (토큰 기반 인증 필요)
     @GetMapping("/mypage")
-    public ResponseEntity<MemberProfileDto> getMyProfile(@RequestHeader("Authorization") String token) {
-        String member_id = jwtTokenUtil.extractUsername(token);
-        if (jwtTokenUtil.validateToken(token, memberService.loadUserByUsername(member_id))) {
-            MemberProfileDto profile = memberService.getMemberProfile(member_id);
-            if (profile != null) {
-                return ResponseEntity.ok(profile);
+    public ResponseEntity<MemberProfileDto> getMyProfile(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7); // "Bearer " 제거
+                String member_id = jwtTokenUtil.extractUsername(token);
+                log.info("Extracted member_id from token: {}", member_id);
+                
+                if (jwtTokenUtil.validateToken(token, memberService.loadUserByUsername(member_id))) {
+                    log.info("Token is valid. Fetching profile information.");
+                    MemberProfileDto profile = memberService.getMemberProfile(member_id);
+                    if (profile != null) {
+                        return ResponseEntity.ok(profile);
+                    } else {
+                        log.warn("Profile not found for member_id: {}", member_id);
+                        return ResponseEntity.notFound().build();
+                    }
+                } else {
+                    log.warn("Token validation failed for member_id: {}", member_id);
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
             } else {
-                return ResponseEntity.notFound().build();
+                log.warn("Authorization header is missing or invalid.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            log.error("Error processing mypage request", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
