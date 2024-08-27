@@ -1,7 +1,6 @@
 package com.example.board.config;
 
 import com.example.board.filter.JwtRequestFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,19 +19,18 @@ public class SecurityConfig {
     private final JwtRequestFilter jwtRequestFilter;
     private final UserDetailsService userDetailsService;
 
-    @Autowired
     public SecurityConfig(JwtRequestFilter jwtRequestFilter, UserDetailsService userDetailsService) {
         this.jwtRequestFilter = jwtRequestFilter;
         this.userDetailsService = userDetailsService;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
         		
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                		 .requestMatchers("/members/login", "/members/register", "/products/List", "/").permitAll()
+                		.requestMatchers("/members/register", "/products/list", "/products/detail", "/members/login", "/").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
