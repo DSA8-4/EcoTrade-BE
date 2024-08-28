@@ -25,7 +25,7 @@ public class MemberService {
     public void saveMember(MemberJoinForm memberJoinForm) {
         Member member = new Member();
         member.setMember_id(memberJoinForm.getMember_id());
-        member.setPassword(memberJoinForm.getPassword()); // 비밀번호 해시화
+        member.setPassword(PasswordUtils.hashPassword(memberJoinForm.getPassword())); // 비밀번호 해시화
         member.setName(memberJoinForm.getName());
         member.setBirth(memberJoinForm.getBirth());
         member.setEmail(memberJoinForm.getEmail());
@@ -69,14 +69,21 @@ public class MemberService {
         Optional<Member> memberOpt = memberRepository.findById(member_id);
         if (memberOpt.isPresent()) {
             Member member = memberOpt.get();
-            if (member.getPassword().equals(password)) {
-                // 비밀번호 일치
-                return true;
+            boolean isPasswordValid = PasswordUtils.validatePassword(password, member.getPassword());
+            if (isPasswordValid) {
+                return true; // 비밀번호 일치
+            } else {
+                // 비밀번호 불일치 로그 추가
+                System.out.println("비밀번호 불일치: member_id = " + member_id);
             }
+        } else {
+            // 회원이 존재하지 않음 로그 추가
+            System.out.println("회원 존재하지 않음: member_id = " + member_id);
         }
-        return false;
+        return false; // 로그인 실패
     }
-
+    
+    
     public MemberProfileDto getMemberProfile(String member_id) {
         Member member = memberRepository.findById(member_id)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
@@ -107,6 +114,6 @@ public class MemberService {
             memberRepository.save(member);
             return true;
         }
-        return false;
+        return false; // 회원이 존재하지 않음
     }
 }

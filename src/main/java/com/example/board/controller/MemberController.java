@@ -3,6 +3,7 @@ package com.example.board.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,21 +15,23 @@ import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
 import com.example.board.service.MemberService;
+import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
 
-import jakarta.servlet.http.HttpSession;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/members")
-
 public class MemberController {
 
-    private final MemberService memberService;
+	private final MemberService memberService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public MemberController(MemberService memberService) {
+    public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider) {
         this.memberService = memberService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     // 유저 등록
@@ -95,26 +98,26 @@ public class MemberController {
 
  // 로그인
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginForm loginForm, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginForm loginForm) {
         Map<String, Object> response = new HashMap<>();
         try {
             boolean isAuthenticated = memberService.login(loginForm.getMember_id(), loginForm.getPassword());
-            log.info("isAuthenticated:{}", isAuthenticated);
             if (isAuthenticated) {
-                session.setAttribute("loggedInUser", loginForm.getMember_id());
                 Member member = memberService.findMemberById(loginForm.getMember_id());
-                
+                String token = jwtTokenProvider.createToken(member.getMember_id());
+
                 response.put("success", true);
                 response.put("message", "로그인 성공");
+                response.put("token", token);
                 response.put("name", member.getName());
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
                 response.put("message", "로그인 실패");
-                return ResponseEntity.ok(response);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
         } catch (Exception e) {
-            System.err.println("Exception occurred: " + e.getMessage());
+            log.error("Login error", e);
             response.put("success", false);
             response.put("message", "서버 오류");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -123,12 +126,12 @@ public class MemberController {
     
     //마이페이지
     @GetMapping("/mypage")
-    public ResponseEntity<MemberProfileDto> getMemberProfile(HttpSession session) {
-        String memberId = (String) session.getAttribute("loggedInUser");
+    public ResponseEntity<MemberProfileDto> getMemberProfile(@RequestHeader("Authorization") String token) {
+        String memberId = jwtTokenProvider.getUserIdFromToken(token.replace("Bearer ", ""));
         if (memberId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        
+
         MemberProfileDto profile = memberService.getMemberProfile(memberId);
         if (profile != null) {
             return ResponseEntity.ok(profile);
@@ -137,12 +140,11 @@ public class MemberController {
         }
     }
 
-    
-    // 로그아웃 처리
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        // 세션으로 로그아웃 처리
-        session.invalidate();
-        return "redirect:/";
+    // 로그아웃 (JWT 기반에서는 특별한 로그아웃 처리가 필요하지 않음)
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        // JWT 기반에서는 서버에서 세션을 관리하지 않으므로 로그아웃 시 특별한 처리를 할 필요가 없습니다.
+        // 클라이언트가 토큰을 폐기하거나, 서버에서 토큰을 블랙리스트에 추가하는 등의 방법을 사용할 수 있습니다.
+        return ResponseEntity.noContent().build();
     }
 }
