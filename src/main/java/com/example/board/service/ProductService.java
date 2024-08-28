@@ -69,4 +69,17 @@ public class ProductService {
 	public List<Product> findSearch(String searchText) {
 	    return productRepository.findByTitleContaining(searchText);
 	}
+	
+    
+	public void deleteProduct(Long id) {
+		productRepository.deleteById(id);
+	}
+	
+	public Optional<Product> findById(Long productId) {
+        return productRepository.findById(productId);
+    }
+
+    public void save(Product product) {
+        productRepository.save(product);
+    }
 }
