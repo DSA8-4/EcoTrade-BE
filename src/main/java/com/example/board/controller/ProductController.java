@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,8 +35,9 @@ public class ProductController {
 	// 상품 등록
 	@PostMapping("/new")
 	public ResponseEntity<Product> newProduct(@RequestBody ProductWriteForm productWriteForm) {
+		log.info("product: {}", productWriteForm);
 		try {
-			log.info("product: {}", productWriteForm);
+			
 
 			Product product = ProductWriteForm.toProduct(productWriteForm);
 
@@ -72,24 +74,33 @@ public class ProductController {
 		}
 //	    log.info("Returning product list: {}", productList);
 		return ResponseEntity.ok(productList);
+		
 	}
 	
-	@GetMapping("/display")
-	public ResponseEntity<Resource> display(@RequestParam("filename") String filename) {
-	    Path filePath = Paths.get(uploadPath).resolve(filename);
-	    Resource resource = new FileSystemResource(filePath);
+	@DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable("id") Long id) {
+        try {
+            productService.deleteProduct(id);
+            return ResponseEntity.ok("Product deleted successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting product.");
+        }
+    }
+	
+	@GetMapping("/detail/{productId}")
+	public ResponseEntity<Product> detail(@PathVariable("productId") Long productId) {
+	    Optional<Product> productOpt = productService.findById(productId);
 
-	    if (!resource.exists()) {
-	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	    if (productOpt.isPresent()) {
+	        Product product = productOpt.get();
+	        product.addHit(); // 조회수 증가
+	        productService.save(product); // 변경 사항 저장
+
+	        return ResponseEntity.ok(product);
+	    } else {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 	    }
-
-	    HttpHeaders headers = new HttpHeaders();
-	    try {
-	        headers.add(HttpHeaders.CONTENT_TYPE, Files.probeContentType(filePath));
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    }
-
-	    return new ResponseEntity<>(resource, headers, HttpStatus.OK);
 	}
+
+
 }
