@@ -102,5 +102,18 @@ public class ProductController {
 	    }
 	}
 
+	
+	// 상품 찜하기
+	@PostMapping("/heart/{productId}")
+	public ResponseEntity<Void> addHeart(@PathVariable("productId") Long productId) {
+	    try {
+	        productService.addHeart(productId);
+	        return ResponseEntity.ok().build();
+	    } catch (Exception e) {
+	        log.error("오류가 발생했습니다", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
+	}
+
 
 }

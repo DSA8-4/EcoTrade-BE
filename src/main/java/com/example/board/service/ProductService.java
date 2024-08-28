@@ -40,6 +40,16 @@ public class ProductService {
 		return product.orElse(null);
 	}
 	
+	// 상품 찜하기
+	@Transactional
+	public void addHeart(Long productId) {
+	    Product product = findProduct(productId);
+	    if (product != null) {
+	        product.setHeart(product.getHeart() + 1); // 좋아요 수 증가
+	        productRepository.save(product); // 변경사항 저장
+	    }
+	}
+	
 	// 상품 수정
 	@Transactional
 	public void updateProduct(Product updateProduct, boolean isFileRemoved, MultipartFile file) {
