@@ -6,9 +6,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig implements WebMvcConfigurer{
-	private String[] excludePaths = {"/members/register", "/members/login", "/members/logout", "/products/list", "", "/error"};
-	
+public class WebConfig implements WebMvcConfigurer{	
     @Bean
     WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
