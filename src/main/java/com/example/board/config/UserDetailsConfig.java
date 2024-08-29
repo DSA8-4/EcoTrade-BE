@@ -11,10 +11,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 public class UserDetailsConfig {
-
-    // Bean for UserDetailsService
     @Bean
-    public UserDetailsService userDetailsService() {
+    UserDetailsService userDetailsService() {
         // Create a user with username "user" and password "password"
         UserDetails user = User.withUsername("user")
                 .password(passwordEncoder().encode("password"))
@@ -25,9 +23,8 @@ public class UserDetailsConfig {
         return new InMemoryUserDetailsManager(user);
     }
 
-    // Bean for PasswordEncoder
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

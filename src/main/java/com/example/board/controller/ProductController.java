@@ -13,11 +13,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -114,8 +116,43 @@ public class ProductController {
 	    }
 	}
 
-	
-	
+	@PutMapping("/update/{productId}")
+	public ResponseEntity<Product> updateProduct(
+	        @PathVariable("productId") Long productId,
+	        @RequestBody ProductWriteForm productWriteForm) {
+	    log.info("Updating product: {}", productWriteForm);
+	    try {
+	        // 기존 상품 불러오기
+	        Optional<Product> existingProductOpt = productService.findById(productId);
+	        if (!existingProductOpt.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	        }
 
+	        Product existingProduct = existingProductOpt.get();
 
+	        // 상품 정보 업데이트
+	        existingProduct.setTitle(productWriteForm.getTitle());
+	        existingProduct.setContents(productWriteForm.getContents());
+	        existingProduct.setPrice(productWriteForm.getPrice());
+
+	        // 기존 이미지 유지, 새로운 이미지 추가
+	        if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
+	            List<Image> images = productWriteForm.getProductImages().stream()
+	                    .map(url -> new Image(url, existingProduct))
+	                    .collect(Collectors.toList());
+
+	            // 기존 이미지에 새로운 이미지 추가
+	            productService.saveImages(images);
+	            existingProduct.getProductImages().addAll(images);
+	        }
+
+	        // 업데이트된 상품 정보 저장 (반환값 없이 저장)
+	        productService.save(existingProduct);
+
+	        return ResponseEntity.ok(existingProduct);
+	    } catch (Exception e) {
+	        log.error("Error occurred while updating product", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
+	}
 }

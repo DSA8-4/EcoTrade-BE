@@ -44,5 +44,4 @@ public class ChatService {
     public void saveMessage(ChatMessage message) {
         chatMessageRepository.save(message);
     }
-
 }
