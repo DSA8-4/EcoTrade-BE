@@ -16,7 +16,8 @@ public class Member {
 	@Column(length=20)
 	private String member_id;
 	
-	@Column(length=20, nullable = false)
+
+	@Column(length=64, nullable = false)
 	private String password;
 	
 	@Column(length=50, nullable = false)
