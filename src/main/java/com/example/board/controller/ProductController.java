@@ -101,19 +101,21 @@ public class ProductController {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 	    }
 	}
-
 	
 	// 상품 찜하기
-	@PostMapping("/heart/{productId}")
-	public ResponseEntity<Void> addHeart(@PathVariable("productId") Long productId) {
+	@PostMapping("/like/{productId}")
+	public ResponseEntity<String> likeProduct(@PathVariable("productId") Long id) {
 	    try {
-	        productService.addHeart(productId);
-	        return ResponseEntity.ok().build();
+	        productService.incrementHeart(id);
+	        return ResponseEntity.ok("Product liked successfully.");
 	    } catch (Exception e) {
-	        log.error("오류가 발생했습니다", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	        log.error("Error occurred while liking product", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error liking product.");
 	    }
 	}
+
+	
+	
 
 
 }
