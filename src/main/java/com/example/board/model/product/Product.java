@@ -37,5 +37,8 @@ public class Product {
     public void addHit() {
         this.hit++;
     }
-
+    
+    public void addHeart() {
+        this.heart++;
+    }
 }
