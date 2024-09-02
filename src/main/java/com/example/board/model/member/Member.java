@@ -23,7 +23,6 @@ public class Member {
 	@Column(length=50, nullable = false)
 	private String name;
 	
-	private LocalDate birth;
 	
 	@Column(length=100)
 	private String email;

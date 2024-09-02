@@ -18,7 +18,7 @@ public class SecurityConfig {
 
     private final JwtRequestFilter jwtRequestFilter;
 
-    public SecurityConfig(JwtRequestFilter jwtRequestFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(JwtRequestFilter jwtRequestFilter) {
         this.jwtRequestFilter = jwtRequestFilter;
     }
 
@@ -30,7 +30,7 @@ public class SecurityConfig {
 	                .disable()
 	            )
                 .authorizeHttpRequests(auth -> auth
-                		.requestMatchers("/members/register", "/products/list", "/products/detail", "/members/login", "/chat-websocket/**", "/chat/**").permitAll()
+                		.requestMatchers("/members/register","/members/mypage", "/products/list", "/products/detail", "/members/login", "/chat-websocket/**", "/chat/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -42,6 +42,7 @@ public class SecurityConfig {
         return http.build();
     }
     
+
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
