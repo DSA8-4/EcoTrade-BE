@@ -22,7 +22,8 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;             // 작성자 정보 (회원)
-
+    
+    
     private Long price;                // 상품 가격
     private Long hit = 0L;             // 상품 조회수 초기값 설정
     private Long heart = 0L;           // 상품 좋아요 수 초기값 설정
@@ -33,6 +34,8 @@ public class Product {
     @JsonManagedReference
     private List<Image> productImages; // 이미지 목록 추가
     
+    @Enumerated(EnumType.STRING)
+    private Category category;         // 상품 카테고리
     // 조회수 증가 메서드
     public void addHit() {
         this.hit++;

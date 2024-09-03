@@ -126,5 +126,4 @@ public class MemberService {
         }
         return false; // 회원이 존재하지 않음
     }
-
 }
