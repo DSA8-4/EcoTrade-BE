@@ -1,5 +1,6 @@
 package com.example.board.model.product;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,16 +22,18 @@ public class ProductWriteForm {
 
 	private List<String> productImages;  // 이미지 목록 추가
 	
+	private Category category;        // 상품 카테고리
+	
 	public static Product toProduct(ProductWriteForm productWriteForm) {
-		Product product = new Product();
-		
-		product.setTitle(productWriteForm.getTitle());
-		product.setContents(productWriteForm.getContents());
-		product.setPrice(productWriteForm.getPrice());
-		product.setHit(0L);
-		product.setHeart(0L);
-		product.setCreated_time(LocalDateTime.now());
-
-		return product;
+	    Product product = new Product();
+	    product.setTitle(productWriteForm.getTitle());
+	    product.setContents(productWriteForm.getContents());
+	    product.setPrice(productWriteForm.getPrice());
+	    product.setHit(0L);
+	    product.setHeart(0L);
+	    product.setCreated_time(LocalDateTime.now());
+	    product.setCategory(productWriteForm.getCategory());
+	    return product;
 	}
+
 }
