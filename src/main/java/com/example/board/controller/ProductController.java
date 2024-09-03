@@ -109,6 +109,18 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
+	
+	// 상품 찜하기
+	@PostMapping("/like/{productId}")
+	public ResponseEntity<String> likeProduct(@PathVariable("productId") Long id) {
+	    try {
+	        productService.incrementHeart(id);
+	        return ResponseEntity.ok("Product liked successfully.");
+	    } catch (Exception e) {
+	        log.error("Error occurred while liking product", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error liking product.");
+	    }
+	}
 
 	@PutMapping("/update/{productId}")
 	public ResponseEntity<Product> updateProduct(@PathVariable("productId") Long productId,

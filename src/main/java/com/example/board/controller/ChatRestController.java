@@ -31,7 +31,6 @@ public class ChatRestController {
     	return chatService.getRoomById(id);
     }
     
-    
     @GetMapping("messages/{room_id}")
     public ResponseEntity<List<ChatMessage>> getChatRoomMessages(@PathVariable("room_id") Long id) {
     	List<ChatMessage> messages = chatService.getMessagesByChatRoomId(id);

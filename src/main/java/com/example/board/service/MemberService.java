@@ -34,7 +34,6 @@ public class MemberService {
         member.setMember_id(memberJoinForm.getMember_id());
         member.setPassword(PasswordUtils.hashPassword(memberJoinForm.getPassword())); // 비밀번호 해시화
         member.setName(memberJoinForm.getName());
-        member.setBirth(memberJoinForm.getBirth());
         member.setEmail(memberJoinForm.getEmail());
 
         memberRepository.save(member);
@@ -56,13 +55,15 @@ public class MemberService {
 
     @Transactional
     public Member updateMemberInfo(String member_id, MemberUpdateRequest updateRequest) {
-        Optional<Member> existingMemberOpt = memberRepository.findById(member_id);
+        
+    	
+    	
+    	Optional<Member> existingMemberOpt = memberRepository.findById(member_id);
         if (existingMemberOpt.isPresent()) {
             Member memberToUpdate = existingMemberOpt.get();
 
             // 업데이트할 필드들을 설정
             if (updateRequest.getName() != null) memberToUpdate.setName(updateRequest.getName());
-            if (updateRequest.getBirth() != null) memberToUpdate.setBirth(updateRequest.getBirth());
             if (updateRequest.getEmail() != null) memberToUpdate.setEmail(updateRequest.getEmail());
             if (updateRequest.getNewPassword() != null) 
             	 memberToUpdate.setPassword(passwordEncoder.encode(updateRequest.getNewPassword())); // 비밀번호 해시화
@@ -99,7 +100,6 @@ public class MemberService {
         return new MemberProfileDto(
             member.getMember_id(),
             member.getName(),
-            member.getBirth(),
             member.getEmail(),
             member.getEco_point()
         );

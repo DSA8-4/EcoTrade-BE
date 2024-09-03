@@ -17,20 +17,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtRequestFilter jwtRequestFilter;
-    private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(JwtRequestFilter jwtRequestFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(JwtRequestFilter jwtRequestFilter) {
         this.jwtRequestFilter = jwtRequestFilter;
-        this.userDetailsService = userDetailsService;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-        		
-                .csrf(csrf -> csrf.disable())
+	        	.csrf(csrf -> csrf
+	                .ignoringRequestMatchers("/chat-websocket/**") // Ignore CSRF for WebSocket endPoints
+	                .disable()
+	            )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("members/register", "/products/new", "/products/list", "/products/detail/*", "/members/login", "products/update/*", "/products/delete/*", "/").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -42,6 +43,7 @@ public class SecurityConfig {
         return http.build();
     }
     
+
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }

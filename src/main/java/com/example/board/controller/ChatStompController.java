@@ -46,6 +46,4 @@ public class ChatStompController {
     		chatService.createRoom(roomName);
     	}
     }
-    
-
 }

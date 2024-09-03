@@ -41,6 +41,18 @@ public class ProductService {
 		Optional<Product> product = productRepository.findById(id);
 		return product.orElse(null);
 	}
+	
+	// 상품 찜하기
+	@Transactional
+	public void incrementHeart(Long productId) {
+	    Product product = findProduct(productId);
+	    if (product != null) {
+	        product.addHeart();
+	        productRepository.save(product);
+	    }
+	}
+	
+	
 
 	// 상품 수정
 	@Transactional

@@ -20,9 +20,7 @@ public class MemberJoinForm {
 	@NotBlank(message = "닉네임을 지어주세요")
 	private String name;
 	
-	@Past
-	@NotNull(message = "생일을 골라주세요")
-	private LocalDate birth;
+
 	
 	private String email;
 	
@@ -32,7 +30,6 @@ public class MemberJoinForm {
 		member.setMember_id(memberJoinForm.getMember_id());
 		member.setPassword(memberJoinForm.getPassword());
 		member.setName(memberJoinForm.getName());
-		member.setBirth(memberJoinForm.getBirth());
 		member.setEmail(memberJoinForm.getEmail());
 		
 		return member;
