@@ -44,33 +44,34 @@ public class ProductController {
 	// 상품 등록
 	@PostMapping("/new")
 	public ResponseEntity<Product> newProduct(@RequestBody ProductWriteForm productWriteForm) {
-	    try {
-	        log.info("product: {}", productWriteForm);
-	        
-	        // ProductWriteForm을 Product로 변환
-	        Product product = ProductWriteForm.toProduct(productWriteForm);
-	        
-	        // 상품 등록
-	        Product createdProduct = productService.uploadProduct(product);
-	        
-	        // 이미지 처리
-	        if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
-	            List<Image> images = productWriteForm.getProductImages().stream()
-	                    .map(url -> new Image(url, createdProduct)).collect(Collectors.toList());
+		try {
+			log.info("product: {}", productWriteForm);
 
-	            // 이미지 저장
-	            productService.saveImages(images);
-	            createdProduct.setProductImages(images);
-	        }
+			// ProductWriteForm을 Product로 변환
+			Product product = ProductWriteForm.toProduct(productWriteForm);
+			String memberId = productWriteForm.getMember_id(); // memberId를 가져옴
 
-	        // 등록된 상품 반환
-	        return ResponseEntity.ok(createdProduct);
-	    } catch (Exception e) {
-	        log.error("Error occurred while registering product", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-	    }
+			// 상품 등록
+			Product createdProduct = productService.uploadProduct(product, memberId);
+
+			// 이미지 처리
+			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
+				List<Image> images = productWriteForm.getProductImages().stream()
+						.map(url -> new Image(url, createdProduct)).collect(Collectors.toList());
+
+				// 이미지 저장
+				productService.saveImages(images);
+				createdProduct.setProductImages(images);
+			}
+
+			// 등록된 상품 반환
+			return ResponseEntity.ok(createdProduct);
+		} catch (Exception e) {
+			log.error("Error occurred while registering product", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
 	}
-	
+
 	@GetMapping("/list")
 	public ResponseEntity<List<ProductDTO>> list(@RequestParam(value = "searchText", required = false) String searchText) {
 	    List<Product> productList = (searchText != null && !searchText.isEmpty()) 
@@ -83,7 +84,7 @@ public class ProductController {
 
 	    return ResponseEntity.ok(productDTOs);
 	}
-	
+
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deleteProduct(@PathVariable("id") Long id) {
 		try {
@@ -108,17 +109,17 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
-	
+
 	// 상품 찜하기
 	@PostMapping("/like/{productId}")
 	public ResponseEntity<String> likeProduct(@PathVariable("productId") Long id) {
-	    try {
-	        productService.incrementHeart(id);
-	        return ResponseEntity.ok("Product liked successfully.");
-	    } catch (Exception e) {
-	        log.error("Error occurred while liking product", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error liking product.");
-	    }
+		try {
+			productService.incrementHeart(id);
+			return ResponseEntity.ok("Product liked successfully.");
+		} catch (Exception e) {
+			log.error("Error occurred while liking product", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error liking product.");
+		}
 	}
 
 	@PutMapping("/update/{productId}")

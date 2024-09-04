@@ -7,9 +7,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.board.model.member.Member;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
 import com.example.board.repository.ImageRepository;
+import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProductRepository;
 
 import jakarta.transaction.Transactional;
@@ -21,14 +23,22 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
+	private final MemberRepository memberRepository;
 	@Value("${file.upload.path}")
 	private String uploadPath;
 
 	// 상품 등록
 	@Transactional
-	public Product uploadProduct(Product product) {
-	    return productRepository.save(product);
-	}
+    public Product uploadProduct(Product product, String memberId) {
+        // 회원 ID로 Member 객체 조회
+        Optional<Member> memberOptional = memberRepository.findById(memberId);
+        if (memberOptional.isPresent()) {
+            Member member = memberOptional.get();
+            product.setMember(member); // Product에 Member 설정
+            return productRepository.save(product);
+        }
+        throw new RuntimeException("Member not found");
+    }
 
 
 	@Transactional
