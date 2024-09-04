@@ -12,6 +12,7 @@ import lombok.ToString;
 @Entity
 @Getter @Setter @ToString
 public class Member {
+	
 	@Id
 	@Column(length=20)
 	private String member_id;

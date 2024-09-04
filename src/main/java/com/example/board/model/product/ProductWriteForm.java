@@ -23,6 +23,7 @@ public class ProductWriteForm {
 	private List<String> productImages;  // 이미지 목록 추가
 	
 	private Category category;        // 상품 카테고리
+	private String member_id; // 회원 ID 추가
 	
 	public static Product toProduct(ProductWriteForm productWriteForm) {
 	    Product product = new Product();
