@@ -1,6 +1,7 @@
 package com.example.board.model.product;
 
 import com.example.board.model.member.Member;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class Product {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
+    @JsonBackReference
     private Member member;             // 작성자 정보 (회원)
     
     

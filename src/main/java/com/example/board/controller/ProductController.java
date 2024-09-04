@@ -1,5 +1,6 @@
 package com.example.board.controller;
 
+import com.example.board.dto.ProductDTO;
 import com.example.board.model.member.Member;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
@@ -71,18 +72,16 @@ public class ProductController {
 	}
 	
 	@GetMapping("/list")
-	public ResponseEntity<List<Product>> list(@RequestParam(value = "searchText", required = false) String searchText) {
-		List<Product> productList;
+	public ResponseEntity<List<ProductDTO>> list(@RequestParam(value = "searchText", required = false) String searchText) {
+	    List<Product> productList = (searchText != null && !searchText.isEmpty()) 
+	        ? productService.findSearch(searchText)
+	        : productService.findAll();
 
-		if (searchText != null && !searchText.isEmpty()) {
-			productList = productService.findSearch(searchText);
-			log.info("Returning product list1: {}", productList);
-		} else {
-			productList = productService.findAll();
-			log.info("Returning product list2: {}", productList);
-		}
-//	    log.info("Returning product list: {}", productList);
-		return ResponseEntity.ok(productList);
+	    List<ProductDTO> productDTOs = productList.stream()
+	        .map(ProductDTO::fromEntity)
+	        .collect(Collectors.toList());
+
+	    return ResponseEntity.ok(productDTOs);
 	}
 	
 	@DeleteMapping("/delete/{id}")
