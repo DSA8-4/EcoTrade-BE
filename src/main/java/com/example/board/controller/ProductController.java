@@ -42,36 +42,75 @@ public class ProductController {
 	private String uploadPath;
 
 	// 상품 등록
-	@PostMapping("/new")
-	public ResponseEntity<Product> newProduct(@RequestBody ProductWriteForm productWriteForm) {
-		try {
-			log.info("product: {}", productWriteForm);
+//	@PostMapping("/new")
+//	public ResponseEntity<Product> newProduct(@RequestBody ProductWriteForm productWriteForm) {
+//		try {
+//			log.info("product: {}", productWriteForm);
+//
+//			// ProductWriteForm을 Product로 변환
+//			Product product = ProductWriteForm.toProduct(productWriteForm);
+//			String memberId = productWriteForm.getMember_id(); // memberId를 가져옴
+//
+//			// 상품 등록
+//			Product createdProduct = productService.uploadProduct(product, memberId);
+//
+//			// 이미지 처리
+//			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
+//				List<Image> images = productWriteForm.getProductImages().stream()
+//						.map(url -> new Image(url, createdProduct)).collect(Collectors.toList());
+//
+//				// 이미지 저장
+//				productService.saveImages(images);
+//				createdProduct.setProductImages(images);
+//			}
+//
+//			// 등록된 상품 반환
+//			return ResponseEntity.ok(createdProduct);
+//		} catch (Exception e) {
+//			log.error("Error occurred while registering product", e);
+//			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+//		}
+//	}
 
-			// ProductWriteForm을 Product로 변환
-			Product product = ProductWriteForm.toProduct(productWriteForm);
-			String memberId = productWriteForm.getMember_id(); // memberId를 가져옴
+    @PostMapping("/new")
+    public ResponseEntity<Product> newProduct(@RequestHeader("Authorization") String authorizationHeader,
+                                               @RequestBody ProductWriteForm productWriteForm) {
+        try {
+            // Extract JWT token from Authorization header
+            String token = authorizationHeader.replace("Bearer ", "");
+            
+            // Validate the token and extract user details
+            if (!jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
 
-			// 상품 등록
-			Product createdProduct = productService.uploadProduct(product, memberId);
+            String memberId = jwtUtil.extractUsername(token); // Extract user ID or other details from token
+            log.info("User ID from token: {}", memberId);
 
-			// 이미지 처리
-			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
-				List<Image> images = productWriteForm.getProductImages().stream()
-						.map(url -> new Image(url, createdProduct)).collect(Collectors.toList());
+            // ProductWriteForm을 Product로 변환
+            Product product = ProductWriteForm.toProduct(productWriteForm);
 
-				// 이미지 저장
-				productService.saveImages(images);
-				createdProduct.setProductImages(images);
-			}
+            // 상품 등록
+            Product createdProduct = productService.uploadProduct(product, memberId);
 
-			// 등록된 상품 반환
-			return ResponseEntity.ok(createdProduct);
-		} catch (Exception e) {
-			log.error("Error occurred while registering product", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
-	}
+            // 이미지 처리
+            if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
+                List<Image> images = productWriteForm.getProductImages().stream()
+                        .map(url -> new Image(url, createdProduct)).collect(Collectors.toList());
 
+                // 이미지 저장
+                productService.saveImages(images);
+                createdProduct.setProductImages(images);
+            }
+
+            // 등록된 상품 반환
+            return ResponseEntity.ok(createdProduct);
+        } catch (Exception e) {
+            log.error("Error occurred while registering product", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    
 	@GetMapping("/list")
 	public ResponseEntity<List<ProductDTO>> list(@RequestParam(value = "searchText", required = false) String searchText) {
 	    List<Product> productList = (searchText != null && !searchText.isEmpty()) 
