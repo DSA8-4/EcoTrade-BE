@@ -30,7 +30,7 @@ public class SecurityConfig {
 	                .disable()
 	            )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("members/register", "/products/new", "/products/list", "/products/detail/*", "/members/login", "products/update/*", "/products/delete/*", "/").permitAll()
+                        .requestMatchers("members/register", "members/mypage", "/members/login", "/products/new", "/products/list", "/products/detail/*", "products/update/*", "/products/delete/*", "/chat-websocket/**", "/chat/**", "/").permitAll()
 
                         .anyRequest().authenticated()
                 )
