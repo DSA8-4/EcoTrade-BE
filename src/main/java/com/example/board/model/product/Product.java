@@ -1,5 +1,6 @@
 package com.example.board.model.product;
 
+import com.example.board.model.chat.ChatRoom;
 import com.example.board.model.member.Member;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -35,6 +36,9 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Image> productImages; // 이미지 목록 추가
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatRoom> chatRooms;  // ChatRoom 목록 추가
     
     @Enumerated(EnumType.STRING)
     private Category category;         // 상품 카테고리

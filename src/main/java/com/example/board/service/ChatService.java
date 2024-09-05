@@ -17,10 +17,10 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
 
-    public void createRoom(String name) {
+    public ChatRoom createRoom(String name) {
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.setName(name);
-        chatRoomRepository.save(chatRoom);
+        return chatRoomRepository.save(chatRoom);
     }
 
     public ChatRoom getRoom(String name) {
