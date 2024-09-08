@@ -5,10 +5,12 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.function.Function;
 
 @Component
 public class JwtTokenProvider {
@@ -34,8 +36,22 @@ public class JwtTokenProvider {
                 .signWith(secretKey) // 비밀키로 서명
                 .compact();
     }
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
 
-    // JWT에서 사용자 ID 추출
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+    private Boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
     public String getUserIdFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey) // 비밀키로 서명 검증
@@ -46,7 +62,6 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    // JWT 유효성 검증
     public boolean validateToken(String token) {
     	  try {
               Jws<Claims> claimsJws = Jwts.parserBuilder()
@@ -57,5 +72,10 @@ public class JwtTokenProvider {
           } catch (Exception e) {
               return false;
           }
+    }
+
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = getUserIdFromToken(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }

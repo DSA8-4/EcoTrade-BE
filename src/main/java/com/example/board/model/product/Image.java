@@ -11,6 +11,7 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // Primary key for the ProductImage entity
 
+    @Column(length = 1024)
     private String url; // URL of the image
 
     @ManyToOne(fetch = FetchType.LAZY)
