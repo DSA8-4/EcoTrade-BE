@@ -30,6 +30,8 @@ public class Product {
     private Long price;                // 상품 가격
     private Long hit = 0L;             // 상품 조회수 초기값 설정
     private Long heart = 0L;           // 상품 좋아요 수 초기값 설정
+//    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Like> likes = new ArrayList<>();
     @Column(name = "created_time", nullable = false)
     private LocalDateTime created_time; // 상품 작성일
     
