@@ -1,6 +1,7 @@
 package com.example.board.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,11 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.dto.PasswordUpdateRequest;
+import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
@@ -79,8 +81,8 @@ public class MemberController {
         }
     }
     
-    //마이페이지
-    @GetMapping("/mypage")
+   //마이페이지
+    @GetMapping("/mypage/{member_id}")
     public ResponseEntity<MemberProfileDto> getMemberProfile(@RequestHeader("Authorization") String token) {
         String memberId = jwtTokenProvider.getUserIdFromToken(token.replace("Bearer ", ""));
         if (memberId == null) {
@@ -154,7 +156,33 @@ public class MemberController {
         }
     }
     
-  
+    // 판매 내역 조회
+    @GetMapping("mypage/sales/{member_id}")
+    public ResponseEntity<List<SalesDTO>> getSalesHistory(
+            @PathVariable("member_id") String memberId,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+
+        // Authorization 헤더에서 'Bearer' 접두어 제거
+        String token = authorizationHeader.startsWith("Bearer ") ? 
+                       authorizationHeader.substring(7) : authorizationHeader;
+
+        // 토큰 검증 및 멤버 ID 확인
+        if (!jwtTokenProvider.validateToken(token)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid or expired token");
+        }
+
+        String tokenMemberId = jwtTokenProvider.getUserIdFromToken(token);
+
+        // 요청한 멤버 ID와 토큰에서 얻은 멤버 ID가 일치하는지 확인
+        if (!memberId.equals(tokenMemberId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+
+        // 판매 내역 조회
+        List<SalesDTO> salesHistory = memberService.getSalesHistory(memberId);
+        return ResponseEntity.ok(salesHistory);
+    }
 
    
     // 로그아웃 (JWT 기반에서는 특별한 로그아웃 처리가 필요하지 않음)
