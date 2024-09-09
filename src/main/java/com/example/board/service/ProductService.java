@@ -12,6 +12,7 @@ import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
 import com.example.board.repository.ImageRepository;
 import com.example.board.repository.MemberRepository;
+import com.example.board.repository.ProductLikeRepository;
 import com.example.board.repository.ProductRepository;
 
 import jakarta.transaction.Transactional;
@@ -24,8 +25,8 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
 	private final MemberRepository memberRepository;
-	@Value("${file.upload.path}")
-	private String uploadPath;
+	private final ProductLikeRepository likeRepository;
+	private final MemberService memberService;
 
 	// 상품 등록
 	@Transactional

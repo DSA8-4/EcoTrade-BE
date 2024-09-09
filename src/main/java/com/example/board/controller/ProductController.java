@@ -7,6 +7,7 @@ import com.example.board.model.product.Product;
 import com.example.board.model.product.ProductWriteForm;
 import com.example.board.service.MemberService;
 import com.example.board.service.ProductService;
+import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.JwtTokenUtil;
 
 import jakarta.validation.Valid;
@@ -37,9 +38,8 @@ import java.util.stream.Collectors;
 public class ProductController {
 	private final ProductService productService;
 	private final MemberService memberService;
-	private final JwtTokenUtil jwtUtil;
-	@Value("${file.upload.path}")
-	private String uploadPath;
+	private final JwtTokenProvider jwtTokenProvider;
+
 
 	// 상품 등록
 	@PostMapping("/new")
