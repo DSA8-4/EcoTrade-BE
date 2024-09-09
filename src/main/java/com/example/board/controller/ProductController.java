@@ -97,32 +97,38 @@ public class ProductController {
 	}
 
 
-//	@PostMapping("/like/{productId}")
-//	public ResponseEntity<String> likeProduct(@PathVariable("productId") Long productId, @RequestHeader("Authorization") String authorizationHeader) {
-//		try {
-//			// Extract JWT token from Authorization header
-//			String token = authorizationHeader.replace("Bearer ", "");
-//
-//			// Validate the token and extract user details
-//			if (!jwtTokenProvider.validateToken(token)) {
-//				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
-//			}
-//
-//			String memberId = jwtTokenProvider.getUserIdFromToken(token);
-//
-//			// Increment like (heart) if the user hasn't liked it yet
-//			boolean success = productService.likeProduct(productId, memberId);
-//
-//			if (success) {
-//				return ResponseEntity.ok("Product liked successfully.");
-//			} else {
-//				return ResponseEntity.status(HttpStatus.CONFLICT).body("You already liked this product.");
-//			}
-//		} catch (Exception e) {
-//			log.error("Error occurred while liking product", e);
-//			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error liking product.");
-//		}
-//	}
+	@PostMapping("/productLike/{productId}")
+	public ResponseEntity<String> likeProduct(@PathVariable("productId") Long productId, @RequestHeader("Authorization") String authorizationHeader) {
+	    try {
+	        // Authorization 헤더에서 JWT 토큰 추출
+	        String token = authorizationHeader.replace("Bearer ", "");
+
+	        // 토큰을 검증하고 사용자 정보를 추출
+	        if (!jwtTokenProvider.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+	        }
+
+	        String memberId = jwtTokenProvider.getUserIdFromToken(token);
+
+	        // 사용자가 제품을 이미 좋아요 했는지 확인
+	        boolean isLiked = productService.isProductLiked(productId, memberId);
+
+	        if (isLiked) {
+	            // 이미 좋아요한 경우, 좋아요 취소
+	            productService.removeProductLike(productId, memberId);
+	            return ResponseEntity.ok("제품의 좋아요가 취소되었습니다.");
+	        } else {
+	            // 좋아요하지 않은 경우, 좋아요 추가
+	            productService.addProductLike(productId, memberId);
+	            return ResponseEntity.ok("제품이 좋아요되었습니다.");
+	        }
+	    } catch (Exception e) {
+	        log.error("제품 좋아요 처리 중 오류 발생", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("제품 좋아요 처리 중 오류가 발생했습니다.");
+	    }
+	}
+
+
 
 	@PutMapping("/update/{productId}")
 	public ResponseEntity<Product> updateProduct(@PathVariable("productId") Long productId,

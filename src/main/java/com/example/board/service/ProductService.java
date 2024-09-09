@@ -3,6 +3,7 @@ package com.example.board.service;
 import com.example.board.model.member.Member;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
+import com.example.board.model.product.ProductLike;
 import com.example.board.repository.ImageRepository;
 import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProductLikeRepository;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,28 +52,28 @@ public class ProductService {
 		return product.orElse(null);
 	}
 
-//	@Transactional
-//	public boolean likeProduct(Long productId, String memberId) {
-//		Product product = findProduct(productId);
-//		Member member = memberService.findMemberById(memberId);  // Assuming you have a service to find the member
-//
-//		if (product != null && member != null) {
-//			// Check if the user already liked the product
-//			boolean alreadyLiked = likeRepository.existsByProductAndMember(product, member);
-//
-//			if (!alreadyLiked) {
-//				// Add a new like
-//				Like like = new Like();
-//				like.setProduct(product);
-//				like.setMember(member);
-//				like.setLikedAt(LocalDateTime.now());
-//
-//				likeRepository.save(like);
-//				return true;
-//			}
-//		}
-//		return false; // User already liked the product or product/member doesn't exist
-//	}
+	@Transactional
+	public boolean productLike(Long productId, String memberId) {
+		Product product = findProduct(productId);
+		Member member = memberService.findMemberById(memberId);  // Assuming you have a service to find the member
+
+		if (product != null && member != null) {
+			// Check if the user already liked the product
+			boolean alreadyLiked = productLikeRepository.existsByProductAndMember(product, member);
+
+			if (!alreadyLiked) {
+				// Add a new like
+				ProductLike productlike = new ProductLike();
+				productlike.setProduct(product);
+				productlike.setMember(member);
+				productlike.setLikedAt(LocalDateTime.now());
+
+				productLikeRepository.save(productlike);
+				return true;
+			}
+		}
+		return false; // User already liked the product or product/member doesn't exist
+	}
 	
 
 	// 상품 수정
@@ -115,5 +117,39 @@ public class ProductService {
 	public void save(Product product) {
 		productRepository.save(product);
 	}
+	
+	public boolean isProductLiked(Long productId, String memberId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("제품이 존재하지 않습니다."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+
+        return productLikeRepository.existsByProductAndMember(product, member);
+    }
+
+    public void addProductLike(Long productId, String memberId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("제품이 존재하지 않습니다."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+
+        ProductLike productLike = new ProductLike();
+        productLike.setProduct(product);
+        productLike.setMember(member);
+
+        productLikeRepository.save(productLike);
+    }
+
+    public void removeProductLike(Long productId, String memberId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("제품이 존재하지 않습니다."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+
+        ProductLike productLike = productLikeRepository.findByProductAndMember(product, member)
+                .orElseThrow(() -> new IllegalArgumentException("좋아요가 존재하지 않습니다."));
+
+        productLikeRepository.delete(productLike);
+    }
 
 }
