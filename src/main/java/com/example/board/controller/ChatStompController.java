@@ -38,12 +38,12 @@ public class ChatStompController {
         messagingTemplate.convertAndSend("/sub/" + room, message);
     }
 
-    @MessageMapping("/createRoom")
-    @SendTo("/sub/rooms")
-    public void createRoom(@Payload String roomName) {
-    	ChatRoom existRoom = chatService.getRoom(roomName);
-    	if(existRoom == null) {
-    		chatService.createRoom(roomName);
-    	}
-    }
+//    @MessageMapping("/createRoom")
+//    @SendTo("/sub/rooms")
+//    public void createRoom(@Payload String roomName) {
+//    	ChatRoom existRoom = chatService.getRoom(roomName);
+//    	if(existRoom == null) {
+//    		chatService.createRoom(roomName);
+//    	}
+//    }
 }

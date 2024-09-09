@@ -1,7 +1,5 @@
 package com.example.board.model.member;
 
-import java.time.LocalDate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,12 +1,5 @@
 package com.example.board.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.example.board.model.member.Member;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
@@ -14,9 +7,13 @@ import com.example.board.repository.ImageRepository;
 import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProductLikeRepository;
 import com.example.board.repository.ProductRepository;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -25,7 +22,8 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
 	private final MemberRepository memberRepository;
-	private final ProductLikeRepository likeRepository;
+
+	private final ProductLikeRepository productLikeRepository;
 	private final MemberService memberService;
 
 	// 상품 등록
@@ -52,17 +50,29 @@ public class ProductService {
 		Optional<Product> product = productRepository.findById(id);
 		return product.orElse(null);
 	}
-	
-	// 상품 찜하기
-	@Transactional
-	public void incrementHeart(Long productId) {
-	    Product product = findProduct(productId);
-	    if (product != null) {
-	        product.addHeart();
-	        productRepository.save(product);
-	    }
-	}
-	
+
+//	@Transactional
+//	public boolean likeProduct(Long productId, String memberId) {
+//		Product product = findProduct(productId);
+//		Member member = memberService.findMemberById(memberId);  // Assuming you have a service to find the member
+//
+//		if (product != null && member != null) {
+//			// Check if the user already liked the product
+//			boolean alreadyLiked = likeRepository.existsByProductAndMember(product, member);
+//
+//			if (!alreadyLiked) {
+//				// Add a new like
+//				Like like = new Like();
+//				like.setProduct(product);
+//				like.setMember(member);
+//				like.setLikedAt(LocalDateTime.now());
+//
+//				likeRepository.save(like);
+//				return true;
+//			}
+//		}
+//		return false; // User already liked the product or product/member doesn't exist
+//	}
 	
 
 	// 상품 수정
