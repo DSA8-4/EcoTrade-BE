@@ -22,7 +22,6 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
 	private final MemberRepository memberRepository;
-
 	private final ProductLikeRepository productLikeRepository;
 	private final MemberService memberService;
 
