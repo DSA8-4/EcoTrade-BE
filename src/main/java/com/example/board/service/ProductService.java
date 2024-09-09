@@ -4,8 +4,8 @@ import com.example.board.model.member.Member;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
 import com.example.board.repository.ImageRepository;
-import com.example.board.repository.LikeRepository;
 import com.example.board.repository.MemberRepository;
+import com.example.board.repository.ProductLikeRepository;
 import com.example.board.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +22,9 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final ImageRepository imageRepository;
 	private final MemberRepository memberRepository;
-	private final LikeRepository likeRepository;
+
+	private final ProductLikeRepository productLikeRepository;
 	private final MemberService memberService;
-	private String uploadPath;
 
 	// 상품 등록
 	@Transactional

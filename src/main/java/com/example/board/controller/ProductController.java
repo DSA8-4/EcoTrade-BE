@@ -6,6 +6,8 @@ import com.example.board.model.product.Product;
 import com.example.board.model.product.ProductWriteForm;
 import com.example.board.service.MemberService;
 import com.example.board.service.ProductService;
+import com.example.board.util.JwtTokenProvider;
+
 
 import com.example.board.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,6 @@ public class ProductController {
 	private final ProductService productService;
 	private final MemberService memberService;
 	private final JwtTokenProvider jwtTokenProvider;
-	private String uploadPath;
 
     @PostMapping("/new")
     public ResponseEntity<Product> newProduct(@RequestHeader("Authorization") String authorizationHeader,
