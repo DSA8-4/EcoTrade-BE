@@ -1,7 +1,15 @@
 package com.example.board.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+<<<<<<< Updated upstream
+=======
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+>>>>>>> Stashed changes
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -9,23 +17,36 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
+import com.example.board.dto.PurchaseDTO;
+import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
+import com.example.board.model.product.Product;
+import com.example.board.model.product.Purchase;
 import com.example.board.repository.MemberRepository;
+import com.example.board.repository.ProductRepository;
+import com.example.board.repository.PurchaseRepository;
 import com.example.board.util.PasswordUtils;
+
+import lombok.RequiredArgsConstructor;
 
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
 
 	private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ProductRepository productRepository;
+    private final PurchaseRepository purchaseRepository;
 
 
-    public MemberService(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder(); // BCryptPasswordEncoder 인스턴스 생성
-    }
+//    public MemberService(MemberRepository memberRepository) {
+//        this.memberRepository = memberRepository;
+//        this.passwordEncoder = new BCryptPasswordEncoder(); // BCryptPasswordEncoder 인스턴스 생성
+//    }
+    
+    
     @Transactional
     public void saveMember(MemberJoinForm memberJoinForm) {
         Member member = new Member();
@@ -123,5 +144,44 @@ public class MemberService {
             return true;
         }
         return false; // 회원이 존재하지 않음
+    }
+    
+    // 판매 이력 가져오기
+    @Transactional
+    public List<SalesDTO> getSalesHistory(String memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+                
+        List<Product> products = productRepository.findByMember(member);
+        return products.stream()
+                .map(product -> {
+                    SalesDTO dto = new SalesDTO();
+                    dto.setProductId(product.getProduct_id());
+                    dto.setTitle(product.getTitle());
+                    dto.setContents(product.getContents());
+                    dto.setPrice(product.getPrice());
+                    dto.setCreatedTime(product.getCreated_time());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 구매 이력 가져오기
+    @Transactional
+    public List<PurchaseDTO> getPurchaseHistory(String memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+                
+        List<Purchase> purchases = purchaseRepository.findByBuyerId(memberId);
+        return purchases.stream()
+                .map(purchase -> {
+                    PurchaseDTO dto = new PurchaseDTO();
+                    dto.setId(purchase.getId());
+                    dto.setProductId(purchase.getProduct().getProduct_id());
+                    dto.setProductTitle(purchase.getProduct().getTitle());
+                    dto.setPurchaseDate(purchase.getPurchaseDate());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }
