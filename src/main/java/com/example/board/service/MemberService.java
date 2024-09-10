@@ -155,15 +155,21 @@ public class MemberService {
         return products.stream()
                 .map(product -> {
                     SalesDTO dto = new SalesDTO();
+                    
                     dto.setProductId(product.getProduct_id());
                     dto.setTitle(product.getTitle());
                     dto.setContents(product.getContents());
                     dto.setPrice(product.getPrice());
                     dto.setCreatedTime(product.getCreated_time());
+                    
+                    // 만약 저장해야 한다면 여기에서 저장 로직 추가
+                    productRepository.save(product); // 예시
+                    
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
+
 
     // 구매 이력 가져오기
     @Transactional

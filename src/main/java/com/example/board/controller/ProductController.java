@@ -5,6 +5,8 @@ import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
 import com.example.board.model.product.ProductStatus;
 import com.example.board.model.product.ProductWriteForm;
+import com.example.board.model.product.Purchase;
+import com.example.board.repository.ProductRepository;
 import com.example.board.service.MemberService;
 import com.example.board.service.ProductService;
 import com.example.board.util.JwtTokenProvider;
@@ -16,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,7 +55,6 @@ public class ProductController {
                 productService.saveImages(images);
                 createdProduct.setProductImages(images);
             }
-
             return ResponseEntity.ok(createdProduct);
         } catch (Exception e) {
             log.error("Error occurred while registering product", e);
@@ -188,5 +191,53 @@ public class ProductController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating product status.");
 	    }
 	}
+	
+	//상품 구매
+	@PostMapping("/purchase/{productId}")
+	public ResponseEntity<String> purchaseProduct(@PathVariable("productId") Long productId, 
+	                                              @RequestHeader("Authorization") String authorizationHeader) {
+	    try {
+	        // Extract the JWT token and validate it
+	        String token = authorizationHeader.replace("Bearer ", "");
+	        if (!jwtTokenProvider.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+	        }
+
+	        // Get the memberId from the token
+	        String memberId = jwtTokenProvider.getUserIdFromToken(token);
+
+	        // Find the product
+	        Optional<Product> productOpt = productService.findById(productId);
+	        if (!productOpt.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+	        }
+
+	        Product product = productOpt.get();
+
+	        // Check if the product is already completed
+	        if (product.getStatus() == ProductStatus.COMPLETED) {
+	            return ResponseEntity.status(HttpStatus.CONFLICT).body("Product has already been sold.");
+	        }
+
+	        // Create a new purchase
+	        Purchase purchase = new Purchase();
+	        purchase.setBuyer(memberService.findMemberById(memberId)); // Get the buyer (member)
+	        purchase.setProduct(product);
+	        purchase.setPurchaseDate(LocalDateTime.now());
+
+	        // Save the purchase
+	        productService.savePurchase(purchase);
+
+	        // Update the product status to "Completed"
+	        product.setStatus(ProductStatus.COMPLETED);
+	        productService.save(product);
+
+	        return ResponseEntity.ok("Product purchased successfully.");
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
+	    }
+	}
+
+
 
 }
