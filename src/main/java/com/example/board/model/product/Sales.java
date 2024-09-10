@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.example.board.model.member.Member;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,12 +21,12 @@ public class Sales {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY) // LAZY 로딩 설정
 	@JoinColumn(name = "member_id")
 	private Member seller; //판매자 정보
 	
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY) // LAZY 로딩 설정
     @JoinColumn(name = "product_id")
 	private Product product; //판매된 상품 정보
 	
