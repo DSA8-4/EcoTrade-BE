@@ -3,6 +3,7 @@ package com.example.board.controller;
 import com.example.board.dto.ProductDTO;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
+import com.example.board.model.product.ProductStatus;
 import com.example.board.model.product.ProductWriteForm;
 import com.example.board.service.MemberService;
 import com.example.board.service.ProductService;
@@ -41,7 +42,7 @@ public class ProductController {
             String memberId = jwtTokenProvider.getUserIdFromToken(token); // Extract user ID or other details from token
             log.info("User ID from token: {}", memberId);
             Product product = ProductWriteForm.toProduct(productWriteForm);
-
+            product.setStatus(ProductStatus.TRADING); // 기본 상태 '거래중' 설정
             Product createdProduct = productService.uploadProduct(product, memberId);
 
             if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
@@ -148,7 +149,7 @@ public class ProductController {
 			existingProduct.setContents(productWriteForm.getContents());
 			existingProduct.setPrice(productWriteForm.getPrice());
 			existingProduct.setCategory(productWriteForm.getCategory());
-
+			
 			// 기존 이미지 유지, 새로운 이미지 추가
 			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
 				List<Image> images = productWriteForm.getProductImages().stream()
@@ -168,4 +169,24 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
+	
+	@PutMapping("/updateStatus/{productId}")
+	public ResponseEntity<String> updateProductStatus(@PathVariable("productId") Long productId,
+	                                                  @RequestParam("status") ProductStatus status) {
+	    try {
+	        Optional<Product> productOpt = productService.findById(productId);
+	        if (!productOpt.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+	        }
+
+	        Product product = productOpt.get();
+	        product.setStatus(status); // 상태 업데이트
+	        productService.save(product);
+
+	        return ResponseEntity.ok("Product status updated to " + status.getDescription());
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating product status.");
+	    }
+	}
+
 }
