@@ -30,12 +30,12 @@ public class ChatStompController {
 
     @MessageMapping("/send/{room}")
     public void sendMessage(@Payload ChatMessage message, @DestinationVariable("room") String room) {
-        ChatRoom chatRoom = chatService.getRoom(room);
-        log.info("room: {}", chatRoom);
-        message.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        message.setChatRoom(chatRoom);
-        chatService.saveMessage(message);
-        messagingTemplate.convertAndSend("/sub/" + room, message);
+//        ChatRoom chatRoom = chatService.getRoom(room);
+//        log.info("room: {}", chatRoom);
+//        message.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+//        message.setChatRoom(chatRoom);
+//        chatService.saveMessage(message);
+//        messagingTemplate.convertAndSend("/sub/" + room, message);
     }
 
 //    @MessageMapping("/createRoom")
