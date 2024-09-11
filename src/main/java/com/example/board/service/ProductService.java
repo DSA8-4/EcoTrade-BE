@@ -135,18 +135,24 @@ public class ProductService {
         return productLikeRepository.existsByProductAndMember(product, member);
     }
 
+    @Transactional
     public void addProductLike(Long productId, String memberId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("제품이 존재하지 않습니다."));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
 
-        ProductLike productLike = new ProductLike();
-        productLike.setProduct(product);
-        productLike.setMember(member);
-        productLikeRepository.save(productLike);
+        if (!productLikeRepository.existsByProductAndMember(product, member)) {
+            ProductLike productLike = new ProductLike();
+            productLike.setProduct(product);
+            productLike.setMember(member);
+            productLikeRepository.save(productLike);
+            product.addHeart(); // Product의 하트 수 증가
+            productRepository.save(product); // 업데이트된 Product 저장
+        }
     }
-    
+
+    @Transactional
     public void removeProductLike(Long productId, String memberId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("제품이 존재하지 않습니다."));
@@ -157,6 +163,8 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("좋아요가 존재하지 않습니다."));
 
         productLikeRepository.delete(productLike);
+        product.removeHeart(); // Product의 하트 수 감소
+        productRepository.save(product); // 업데이트된 Product 저장
     }
 
 }

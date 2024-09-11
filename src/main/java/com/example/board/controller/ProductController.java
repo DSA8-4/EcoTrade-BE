@@ -11,7 +11,6 @@ import com.example.board.service.MemberService;
 import com.example.board.service.ProductService;
 import com.example.board.util.JwtTokenProvider;
 
-
 import com.example.board.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,46 +32,45 @@ public class ProductController {
 	private final MemberService memberService;
 	private final JwtTokenProvider jwtTokenProvider;
 
-    @PostMapping("/new")
-    public ResponseEntity<Product> newProduct(@RequestHeader("Authorization") String authorizationHeader,
-                                               @RequestBody ProductWriteForm productWriteForm) {
-        try {
-            String token = authorizationHeader.replace("Bearer ", "");
-            if (!jwtTokenProvider.validateToken(token)) {
+	@PostMapping("/new")
+	public ResponseEntity<Product> newProduct(@RequestHeader("Authorization") String authorizationHeader,
+			@RequestBody ProductWriteForm productWriteForm) {
+		try {
+			String token = authorizationHeader.replace("Bearer ", "");
+			if (!jwtTokenProvider.validateToken(token)) {
 				log.info("invalid token");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-            }
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+			}
 
-            String memberId = jwtTokenProvider.getUserIdFromToken(token); // Extract user ID or other details from token
-            log.info("User ID from token: {}", memberId);
-            Product product = ProductWriteForm.toProduct(productWriteForm);
-            product.setStatus(ProductStatus.TRADING); // 기본 상태 '거래중' 설정
-            Product createdProduct = productService.uploadProduct(product, memberId);
+			String memberId = jwtTokenProvider.getUserIdFromToken(token); // Extract user ID or other details from token
+			log.info("User ID from token: {}", memberId);
+			Product product = ProductWriteForm.toProduct(productWriteForm);
+			product.setStatus(ProductStatus.TRADING); // 기본 상태 '거래중' 설정
+			Product createdProduct = productService.uploadProduct(product, memberId);
 
-            if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
-                List<Image> images = productWriteForm.getProductImages().stream()
-                        .map(url -> new Image(url, createdProduct)).collect(Collectors.toList());
-                productService.saveImages(images);
-                createdProduct.setProductImages(images);
-            }
-            return ResponseEntity.ok(createdProduct);
-        } catch (Exception e) {
-            log.error("Error occurred while registering product", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
+				List<Image> images = productWriteForm.getProductImages().stream()
+						.map(url -> new Image(url, createdProduct)).collect(Collectors.toList());
+				productService.saveImages(images);
+				createdProduct.setProductImages(images);
+			}
+			return ResponseEntity.ok(createdProduct);
+		} catch (Exception e) {
+			log.error("Error occurred while registering product", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
 
 	@GetMapping("/list")
-	public ResponseEntity<List<ProductDTO>> list(@RequestParam(value = "searchText", required = false) String searchText) {
-	    List<Product> productList = (searchText != null && !searchText.isEmpty()) 
-	        ? productService.findSearch(searchText)
-	        : productService.findAll();
+	public ResponseEntity<List<ProductDTO>> list(
+			@RequestParam(value = "searchText", required = false) String searchText) {
+		List<Product> productList = (searchText != null && !searchText.isEmpty())
+				? productService.findSearch(searchText)
+				: productService.findAll();
 
-	    List<ProductDTO> productDTOs = productList.stream()
-	        .map(ProductDTO::fromEntity)
-	        .collect(Collectors.toList());
+		List<ProductDTO> productDTOs = productList.stream().map(ProductDTO::fromEntity).collect(Collectors.toList());
 
-	    return ResponseEntity.ok(productDTOs);
+		return ResponseEntity.ok(productDTOs);
 	}
 
 	@DeleteMapping("/delete/{id}")
@@ -100,39 +98,37 @@ public class ProductController {
 		}
 	}
 
-
 	@PostMapping("/productLike/{productId}")
-	public ResponseEntity<String> likeProduct(@PathVariable("productId") Long productId, @RequestHeader("Authorization") String authorizationHeader) {
-	    try {
-	        // Authorization 헤더에서 JWT 토큰 추출
-	        String token = authorizationHeader.replace("Bearer ", "");
+	public ResponseEntity<String> likeProduct(@PathVariable("productId") Long productId,
+			@RequestHeader("Authorization") String authorizationHeader) {
+		try {
+			// Authorization 헤더에서 JWT 토큰 추출
+			String token = authorizationHeader.replace("Bearer ", "");
 
-	        // 토큰을 검증하고 사용자 정보를 추출
-	        if (!jwtTokenProvider.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
-	        }
+			// 토큰을 검증하고 사용자 정보를 추출
+			if (!jwtTokenProvider.validateToken(token)) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+			}
 
-	        String memberId = jwtTokenProvider.getUserIdFromToken(token);
+			String memberId = jwtTokenProvider.getUserIdFromToken(token);
 
-	        // 사용자가 제품을 이미 좋아요 했는지 확인
-	        boolean isLiked = productService.isProductLiked(productId, memberId);
+			// 사용자가 제품을 이미 좋아요 했는지 확인
+			boolean isLiked = productService.isProductLiked(productId, memberId);
 
-	        if (isLiked) {
-	            // 이미 좋아요한 경우, 좋아요 취소
-	            productService.removeProductLike(productId, memberId);
-	            return ResponseEntity.ok("제품의 좋아요가 취소되었습니다.");
-	        } else {
-	            // 좋아요하지 않은 경우, 좋아요 추가
-	            productService.addProductLike(productId, memberId);
-	            return ResponseEntity.ok("제품이 좋아요되었습니다.");
-	        }
-	    } catch (Exception e) {
-	        log.error("제품 좋아요 처리 중 오류 발생", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("제품 좋아요 처리 중 오류가 발생했습니다.");
-	    }
+			if (isLiked) {
+				// 이미 좋아요한 경우, 좋아요 취소
+				productService.removeProductLike(productId, memberId);
+				return ResponseEntity.ok("제품의 좋아요가 취소되었습니다.");
+			} else {
+				// 좋아요하지 않은 경우, 좋아요 추가
+				productService.addProductLike(productId, memberId);
+				return ResponseEntity.ok("제품이 좋아요되었습니다.");
+			}
+		} catch (Exception e) {
+			log.error("제품 좋아요 처리 중 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("제품 좋아요 처리 중 오류가 발생했습니다.");
+		}
 	}
-
-
 
 	@PutMapping("/update/{productId}")
 	public ResponseEntity<Product> updateProduct(@PathVariable("productId") Long productId,
@@ -152,7 +148,7 @@ public class ProductController {
 			existingProduct.setContents(productWriteForm.getContents());
 			existingProduct.setPrice(productWriteForm.getPrice());
 			existingProduct.setCategory(productWriteForm.getCategory());
-			
+
 			// 기존 이미지 유지, 새로운 이미지 추가
 			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
 				List<Image> images = productWriteForm.getProductImages().stream()
@@ -172,72 +168,70 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
-	
+
 	@PutMapping("/updateStatus/{productId}")
 	public ResponseEntity<String> updateProductStatus(@PathVariable("productId") Long productId,
-	                                                  @RequestParam("status") ProductStatus status) {
-	    try {
-	        Optional<Product> productOpt = productService.findById(productId);
-	        if (!productOpt.isPresent()) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
-	        }
+			@RequestParam("status") ProductStatus status) {
+		try {
+			Optional<Product> productOpt = productService.findById(productId);
+			if (!productOpt.isPresent()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+			}
 
-	        Product product = productOpt.get();
-	        product.setStatus(status); // 상태 업데이트
-	        productService.save(product);
+			Product product = productOpt.get();
+			product.setStatus(status); // 상태 업데이트
+			productService.save(product);
 
-	        return ResponseEntity.ok("Product status updated to " + status.getDescription());
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating product status.");
-	    }
+			return ResponseEntity.ok("Product status updated to " + status.getDescription());
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating product status.");
+		}
 	}
-	
-	//상품 구매
+
+	// 상품 구매
 	@PostMapping("/purchase/{productId}")
-	public ResponseEntity<String> purchaseProduct(@PathVariable("productId") Long productId, 
-	                                              @RequestHeader("Authorization") String authorizationHeader) {
-	    try {
-	        // Extract the JWT token and validate it
-	        String token = authorizationHeader.replace("Bearer ", "");
-	        if (!jwtTokenProvider.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
-	        }
+	public ResponseEntity<String> purchaseProduct(@PathVariable("productId") Long productId,
+			@RequestHeader("Authorization") String authorizationHeader) {
+		try {
+			// Extract the JWT token and validate it
+			String token = authorizationHeader.replace("Bearer ", "");
+			if (!jwtTokenProvider.validateToken(token)) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+			}
 
-	        // Get the memberId from the token
-	        String memberId = jwtTokenProvider.getUserIdFromToken(token);
+			// Get the memberId from the token
+			String memberId = jwtTokenProvider.getUserIdFromToken(token);
 
-	        // Find the product
-	        Optional<Product> productOpt = productService.findById(productId);
-	        if (!productOpt.isPresent()) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
-	        }
+			// Find the product
+			Optional<Product> productOpt = productService.findById(productId);
+			if (!productOpt.isPresent()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+			}
 
-	        Product product = productOpt.get();
+			Product product = productOpt.get();
 
-	        // Check if the product is already completed
-	        if (product.getStatus() == ProductStatus.COMPLETED) {
-	            return ResponseEntity.status(HttpStatus.CONFLICT).body("Product has already been sold.");
-	        }
+			// Check if the product is already completed
+			if (product.getStatus() == ProductStatus.COMPLETED) {
+				return ResponseEntity.status(HttpStatus.CONFLICT).body("Product has already been sold.");
+			}
 
-	        // Create a new purchase
-	        Purchase purchase = new Purchase();
-	        purchase.setBuyer(memberService.findMemberById(memberId)); // Get the buyer (member)
-	        purchase.setProduct(product);
-	        purchase.setPurchaseDate(LocalDateTime.now());
+			// Create a new purchase
+			Purchase purchase = new Purchase();
+			purchase.setBuyer(memberService.findMemberById(memberId)); // Get the buyer (member)
+			purchase.setProduct(product);
+			purchase.setPurchaseDate(LocalDateTime.now());
 
-	        // Save the purchase
-	        productService.savePurchase(purchase);
+			// Save the purchase
+			productService.savePurchase(purchase);
 
-	        // Update the product status to "Completed"
-	        product.setStatus(ProductStatus.COMPLETED);
-	        productService.save(product);
+			// Update the product status to "Completed"
+			product.setStatus(ProductStatus.COMPLETED);
+			productService.save(product);
 
-	        return ResponseEntity.ok("Product purchased successfully.");
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
-	    }
+			return ResponseEntity.ok("Product purchased successfully.");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
+		}
 	}
-
-
 
 }
