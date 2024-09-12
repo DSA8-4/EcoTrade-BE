@@ -24,6 +24,8 @@ import com.example.board.service.MemberService;
 import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
 
+import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,7 +43,9 @@ public class MemberController {
 
 	// 유저 등록
 	@PostMapping("/register")
-	public ResponseEntity<MemberJoinForm> registerMember(@RequestBody MemberJoinForm memberJoinForm) {
+	public ResponseEntity<MemberJoinForm> registerMember(@Valid @RequestBody MemberJoinForm memberJoinForm) {
+
+
 		memberService.saveMember(memberJoinForm);
 		return ResponseEntity.ok(memberJoinForm);
 	}
@@ -171,33 +175,12 @@ public class MemberController {
 
 		// 판매 내역 조회
 		List<Product> salesHistory = memberService.getSalesHistory(memberId);
-        return ResponseEntity.ok(salesHistory);
+
+		return ResponseEntity.ok(salesHistory);
+
 	}
 
-	// 구매 내역 조회
-	@GetMapping("mypage/purchases/{member_id}")
-	public ResponseEntity<List<PurchaseDTO>> getPurchaseHistory(@PathVariable("member_id") String memberId,
-			@RequestHeader("Authorization") String authorizationHeader) {
 
-		// Authorization 헤더에서 'Bearer' 접두어 제거
-		String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7)
-				: authorizationHeader;
-
-		// 토큰 검증 및 멤버 ID 확인
-		if (!jwtTokenProvider.validateToken(token)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid or expired token");
-		}
-
-		String tokenMemberId = jwtTokenProvider.getUserIdFromToken(token);
-
-		// 요청한 멤버 ID와 토큰에서 얻은 멤버 ID가 일치하는지 확인
-		if (!memberId.equals(tokenMemberId)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-		}
-
-		// 구매 내역 조회
-		List<PurchaseDTO> purchaseHistory = memberService.getPurchaseHistory(memberId);
-		return ResponseEntity.ok(purchaseHistory);
 	}
 
 	// 로그아웃 (JWT 기반에서는 특별한 로그아웃 처리가 필요하지 않음)
