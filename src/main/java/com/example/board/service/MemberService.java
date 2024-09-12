@@ -160,7 +160,6 @@ public class MemberService {
         return products.stream()
                 .map(product -> {
                     SalesDTO dto = new SalesDTO();
-                    
                     dto.setProductId(product.getProduct_id());
                     dto.setTitle(product.getTitle());
                     dto.setContents(product.getContents());

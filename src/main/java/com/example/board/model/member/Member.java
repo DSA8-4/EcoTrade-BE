@@ -27,7 +27,4 @@ public class Member {
 	private String email;
 	
 	private Long eco_point = 0L;
-
-
-
 }

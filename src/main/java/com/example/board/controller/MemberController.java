@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.dto.PasswordUpdateRequest;
+import com.example.board.dto.PurchaseDTO;
 import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
@@ -183,6 +184,36 @@ public class MemberController {
         List<SalesDTO> salesHistory = memberService.getSalesHistory(memberId);
         return ResponseEntity.ok(salesHistory);
     }
+    
+    
+    
+    // 구매 내역 조회
+    @GetMapping("mypage/purchases/{member_id}")
+    public ResponseEntity<List<PurchaseDTO>> getPurchaseHistory(
+            @PathVariable("member_id") String memberId,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        // Authorization 헤더에서 'Bearer' 접두어 제거
+        String token = authorizationHeader.startsWith("Bearer ") ? 
+                       authorizationHeader.substring(7) : authorizationHeader;
+
+        // 토큰 검증 및 멤버 ID 확인
+        if (!jwtTokenProvider.validateToken(token)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid or expired token");
+        }
+
+        String tokenMemberId = jwtTokenProvider.getUserIdFromToken(token);
+
+        // 요청한 멤버 ID와 토큰에서 얻은 멤버 ID가 일치하는지 확인
+        if (!memberId.equals(tokenMemberId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+
+        // 구매 내역 조회
+        List<PurchaseDTO> purchaseHistory = memberService.getPurchaseHistory(memberId);
+        return ResponseEntity.ok(purchaseHistory);
+    }
+
 
    
     // 로그아웃 (JWT 기반에서는 특별한 로그아웃 처리가 필요하지 않음)
