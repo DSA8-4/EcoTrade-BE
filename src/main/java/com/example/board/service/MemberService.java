@@ -56,6 +56,11 @@ public class MemberService {
 
         memberRepository.save(member);
     }
+    
+    public void saveMember(Member member) {
+        memberRepository.save(member); // Member를 데이터베이스에 저장
+    }
+
 
     public Member findMemberById(String member_id) {
         return memberRepository.findById(member_id).orElse(null);

@@ -166,5 +166,5 @@ public class ProductService {
         product.removeHeart(); // Product의 하트 수 감소
         productRepository.save(product); // 업데이트된 Product 저장
     }
-
+    
 }

@@ -1,6 +1,7 @@
 package com.example.board.controller;
 
 import com.example.board.dto.ProductDTO;
+import com.example.board.model.member.Member;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
 import com.example.board.model.product.ProductStatus;
@@ -191,47 +192,65 @@ public class ProductController {
 	// 상품 구매
 	@PostMapping("/purchase/{productId}")
 	public ResponseEntity<String> purchaseProduct(@PathVariable("productId") Long productId,
-			@RequestHeader("Authorization") String authorizationHeader) {
-		try {
-			// Extract the JWT token and validate it
-			String token = authorizationHeader.replace("Bearer ", "");
-			if (!jwtTokenProvider.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
-			}
+	                                              @RequestHeader("Authorization") String authorizationHeader) {
+	    try {
+	        log.info("Extracting token...");
+	        // Extract the JWT token and validate it
+	        String token = authorizationHeader.replace("Bearer ", "");
+	        if (!jwtTokenProvider.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+	        }
 
-			// Get the memberId from the token
-			String memberId = jwtTokenProvider.getUserIdFromToken(token);
+	        log.info("Extracting member ID from token...");
+	        // Get the memberId from the token
+	        String memberId = jwtTokenProvider.getUserIdFromToken(token);
 
-			// Find the product
-			Optional<Product> productOpt = productService.findById(productId);
-			if (!productOpt.isPresent()) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
-			}
+	        log.info("Finding product...");
+	        // Find the product
+	        Optional<Product> productOpt = productService.findById(productId);
+	        if (!productOpt.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+	        }
 
-			Product product = productOpt.get();
+	        Product product = productOpt.get();
 
-			// Check if the product is already completed
-			if (product.getStatus() == ProductStatus.COMPLETED) {
-				return ResponseEntity.status(HttpStatus.CONFLICT).body("Product has already been sold.");
-			}
+	        // Check if the product is already completed
+	        if (product.getStatus() == ProductStatus.COMPLETED) {
+	            return ResponseEntity.status(HttpStatus.CONFLICT).body("Product has already been sold.");
+	        }
 
-			// Create a new purchase
-			Purchase purchase = new Purchase();
-			purchase.setBuyer(memberService.findMemberById(memberId)); // Get the buyer (member)
-			purchase.setProduct(product);
-			purchase.setPurchaseDate(LocalDateTime.now());
+	        log.info("Creating new purchase...");
+	        // Create a new purchase
+	        Purchase purchase = new Purchase();
+	        purchase.setBuyer(memberService.findMemberById(memberId)); // Get the buyer (member)
+	        purchase.setProduct(product);
+	        purchase.setPurchaseDate(LocalDateTime.now());
 
-			// Save the purchase
-			productService.savePurchase(purchase);
+	        // Save the purchase
+	        productService.savePurchase(purchase);
 
-			// Update the product status to "Completed"
-			product.setStatus(ProductStatus.COMPLETED);
-			productService.save(product);
+	        log.info("Updating product status to COMPLETED...");
+	        // Update the product status to "Completed"
+	        product.setStatus(ProductStatus.COMPLETED);
+	        productService.save(product);
 
-			return ResponseEntity.ok("Product purchased successfully.");
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
-		}
+	        log.info("Updating member's eco points...");
+	        // 적립 포인트 계산 및 저장
+	        Member buyer = memberService.findMemberById(memberId);
+//	        Member seller = memberService.findMemberById(memberId);
+	        long ecoPointBuyer = Math.round(product.getPrice() * 0.01);
+//	        long ecoPointSeller = Math.round(product.getPrice() * 0.005);
+//	        seller.setEco_point(seller.getEco_point() + ecoPointSeller);
+	        buyer.setEco_point(buyer.getEco_point() + ecoPointBuyer);
+	        memberService.saveMember(buyer);
+	        
+	        return ResponseEntity.ok("Product purchased successfully.");
+	    } catch (Exception e) {
+	        log.error("Error during purchase", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
+	    }
 	}
+
+
 
 }
