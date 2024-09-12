@@ -56,6 +56,11 @@ public class MemberService {
 
         memberRepository.save(member);
     }
+    
+    public void saveMember(Member member) {
+        memberRepository.save(member); // Member를 데이터베이스에 저장
+    }
+
 
     public Member findMemberById(String member_id) {
         return memberRepository.findById(member_id).orElse(null);
@@ -152,8 +157,10 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
+
         // 회원이 등록한 상품 조회
         return productRepository.findByMember(member);
+
     }
 
 

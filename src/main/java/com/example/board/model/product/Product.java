@@ -44,6 +44,14 @@ public class Product {
     
     @Enumerated(EnumType.STRING)
     private Category category;         // 상품 카테고리
+    
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status; // 거래 상태 필드 추가
+
+    public Product() {
+        this.status = ProductStatus.TRADING; // 기본 상태를 '거래중'으로 설정
+    }
+    
     // 조회수 증가 메서드
     public void addHit() {
         this.hit++;
@@ -51,5 +59,11 @@ public class Product {
     
     public void addHeart() {
         this.heart++;
+    }
+    
+    public void removeHeart() {
+        if (this.heart > 0) { // 하트 수가 0보다 클 때만 감소
+            this.heart--;
+        }
     }
 }
