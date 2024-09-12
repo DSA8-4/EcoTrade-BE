@@ -8,13 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.board.model.member.Member;
+import com.example.board.model.product.Purchase;
 import com.example.board.model.product.Sales;
 
 @Repository
 public interface SalesRepository extends JpaRepository<Sales, Long> {
 
-	  // 판매자 ID로 판매 내역을 조회하는 메서드
-	@Query("SELECT s FROM Sales s WHERE s.seller.id = :memberId")
+	@Query("SELECT s FROM Sales s WHERE s.seller.member_id = :memberId")
     List<Sales> findBySellerId(@Param("memberId") String memberId);
 
 }

@@ -152,26 +152,15 @@ public class MemberService {
     
     // 판매 이력 가져오기
     @Transactional
-    public List<SalesDTO> getSalesHistory(String memberId) {
+    public List<Product> getSalesHistory(String memberId) {
+        // 회원 정보 조회
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-                
-        List<Product> products = productRepository.findByMember(member);
-        return products.stream()
-                .map(product -> {
-                    SalesDTO dto = new SalesDTO();
-                    dto.setProductId(product.getProduct_id());
-                    dto.setTitle(product.getTitle());
-                    dto.setContents(product.getContents());
-                    dto.setPrice(product.getPrice());
-                    dto.setCreatedTime(product.getCreated_time());
-                    
-                    // 만약 저장해야 한다면 여기에서 저장 로직 추가
-                    productRepository.save(product); // 예시
-                    
-                    return dto;
-                })
-                .collect(Collectors.toList());
+
+
+        // 회원이 등록한 상품 조회
+        return productRepository.findByMember(member);
+
     }
 
 
