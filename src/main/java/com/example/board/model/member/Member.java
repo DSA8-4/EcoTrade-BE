@@ -26,5 +26,5 @@ public class Member {
 	@Column(length=100)
 	private String email;
 	
-	private Long eco_point;
+	private Long eco_point = 0L;
 }

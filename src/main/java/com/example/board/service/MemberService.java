@@ -42,6 +42,7 @@ public class MemberService {
 //        this.passwordEncoder = new BCryptPasswordEncoder(); // BCryptPasswordEncoder 인스턴스 생성
 //    }
 
+
 	@Transactional
 	public void saveMember(MemberJoinForm memberJoinForm) {
 		// member_id 중복 확인
@@ -176,4 +177,5 @@ public class MemberService {
 			return dto;
 		}).collect(Collectors.toList());
 	}
+
 }

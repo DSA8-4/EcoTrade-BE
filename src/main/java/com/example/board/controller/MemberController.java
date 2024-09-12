@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.dto.PasswordUpdateRequest;
+import com.example.board.dto.PurchaseDTO;
 import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
@@ -24,6 +25,7 @@ import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
 
 import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -42,6 +44,7 @@ public class MemberController {
 	// 유저 등록
 	@PostMapping("/register")
 	public ResponseEntity<MemberJoinForm> registerMember(@Valid @RequestBody MemberJoinForm memberJoinForm) {
+
 
 		memberService.saveMember(memberJoinForm);
 		return ResponseEntity.ok(memberJoinForm);
@@ -172,7 +175,12 @@ public class MemberController {
 
 		// 판매 내역 조회
 		List<Product> salesHistory = memberService.getSalesHistory(memberId);
+
 		return ResponseEntity.ok(salesHistory);
+
+	}
+
+
 	}
 
 	// 로그아웃 (JWT 기반에서는 특별한 로그아웃 처리가 필요하지 않음)
