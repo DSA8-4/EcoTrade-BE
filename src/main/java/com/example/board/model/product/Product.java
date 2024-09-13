@@ -60,4 +60,10 @@ public class Product {
     public void addHeart() {
         this.heart++;
     }
+    
+    public void removeHeart() {
+        if (this.heart > 0) { // 하트 수가 0보다 클 때만 감소
+            this.heart--;
+        }
+    }
 }
