@@ -1,21 +1,7 @@
 package com.example.board.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
-import com.example.board.dto.PasswordUpdateRequest;
-import com.example.board.dto.PurchaseDTO;
-import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
@@ -23,10 +9,16 @@ import com.example.board.model.product.Product;
 import com.example.board.service.MemberService;
 import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
-
 import jakarta.validation.Valid;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -181,7 +173,7 @@ public class MemberController {
 	}
 
 
-	}
+
 
 	// 로그아웃 (JWT 기반에서는 특별한 로그아웃 처리가 필요하지 않음)
 	@PostMapping("/logout")

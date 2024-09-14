@@ -1,22 +1,15 @@
 package com.example.board.controller;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
+import com.example.board.model.chat.ChatMessage;
+import com.example.board.service.ChatService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import com.example.board.model.chat.ChatMessage;
-import com.example.board.model.chat.ChatRoom;
-import com.example.board.service.ChatService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("chat")
