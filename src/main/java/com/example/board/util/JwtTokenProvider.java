@@ -64,10 +64,10 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
     	  try {
-              Jws<Claims> claimsJws = Jwts.parserBuilder()
-                      .setSigningKey(secretKey) // 비밀키로 서명 검증
-                      .build()
-                      .parseClaimsJws(token);
+              Jwts.parserBuilder()
+                  .setSigningKey(secretKey) // 비밀키로 서명 검증
+                  .build()
+                  .parseClaimsJws(token);
               return true;
           } catch (Exception e) {
               return false;

@@ -40,6 +40,7 @@ public class Product {
     private List<Image> productImages; // 이미지 목록 추가
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ChatRoom> chatRooms;  // ChatRoom 목록 추가
     
     @Enumerated(EnumType.STRING)
