@@ -2,16 +2,9 @@ package com.example.board.controller;
 
 import com.example.board.dto.ProductDTO;
 import com.example.board.model.member.Member;
-import com.example.board.model.product.Image;
-import com.example.board.model.product.Product;
-import com.example.board.model.product.ProductStatus;
-import com.example.board.model.product.ProductWriteForm;
-import com.example.board.model.product.Purchase;
-import com.example.board.repository.ProductRepository;
+import com.example.board.model.product.*;
 import com.example.board.service.MemberService;
 import com.example.board.service.ProductService;
-import com.example.board.util.JwtTokenProvider;
-
 import com.example.board.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -85,15 +78,17 @@ public class ProductController {
 	}
 
 	@GetMapping("/detail/{productId}")
-	public ResponseEntity<Product> detail(@PathVariable("productId") Long productId) {
+	public ResponseEntity<ProductDTO> detail(@PathVariable("productId") Long productId) {
 		Optional<Product> productOpt = productService.findById(productId);
 
 		if (productOpt.isPresent()) {
 			Product product = productOpt.get();
 			product.addHit(); // 조회수 증가
 			productService.save(product); // 변경 사항 저장
+			
+			ProductDTO productDTO = ProductDTO.fromEntity(product);
 
-			return ResponseEntity.ok(product);
+			return ResponseEntity.ok(productDTO);
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
@@ -242,7 +237,7 @@ public class ProductController {
 //	        long ecoPointSeller = Math.round(product.getPrice() * 0.005);
 //	        seller.setEco_point(seller.getEco_point() + ecoPointSeller);
 	        buyer.setEco_point(buyer.getEco_point() + ecoPointBuyer);
-	        memberService.saveMember(buyer);
+//	        memberService.saveMember(buyer);
 	        
 	        return ResponseEntity.ok("Product purchased successfully.");
 	    } catch (Exception e) {
@@ -250,7 +245,4 @@ public class ProductController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
 	    }
 	}
-
-
-
 }
