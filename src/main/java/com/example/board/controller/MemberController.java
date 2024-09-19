@@ -1,14 +1,20 @@
 package com.example.board.controller;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.board.dto.MemberProfileDto;
@@ -22,6 +28,8 @@ import com.example.board.model.product.Product;
 import com.example.board.service.MemberService;
 import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
+import java.io.FileInputStream;
+
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -79,6 +87,46 @@ public class MemberController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 	}
+	
+	 // 프로필 이미지 업로드 API
+	@PostMapping("/profile/upload")
+	public ResponseEntity<Map<String, String>> uploadProfileImage(@RequestParam("file") MultipartFile file,
+	                                                               @RequestHeader("Authorization") String token) {
+	    try {
+	        String memberId = jwtTokenProvider.getUserIdFromToken(token.replace("Bearer ", ""));
+	        String fileUrl = memberService.uploadProfileImage(memberId, file); // 파일 업로드 후 URL 반환
+
+	        Map<String, String> response = new HashMap<>();
+	        response.put("message", "프로필 이미지가 성공적으로 업로드되었습니다.");
+	        response.put("imageUrl", fileUrl); // 이미지 URL 반환
+
+	        return ResponseEntity.ok(response);
+	    } catch (IllegalArgumentException e) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+	    } catch (IOException e) {
+	        log.error("파일 업로드 실패", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "파일 업로드 중 오류 발생"));
+	    }
+	}
+	
+	@GetMapping("/profile/images/{fileName}")
+	public ResponseEntity<Resource> getProfileImage(@PathVariable("fileName") String fileName) {
+	    try {
+	        File file = new File("C:/Users/SUN/path/to/profile-images/" + fileName);
+	        if (!file.exists()) {
+	            return ResponseEntity.notFound().build();
+	        }
+
+	        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+	        return ResponseEntity.ok()
+	                .contentType(MediaType.IMAGE_JPEG) // 파일 형식에 맞게 수정
+	                .body(resource);
+	    } catch (IOException e) {
+	        log.error("이미지 로드 실패", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
+	}
+
 
 	// 마이페이지
 	@GetMapping("/mypage/{member_id}")

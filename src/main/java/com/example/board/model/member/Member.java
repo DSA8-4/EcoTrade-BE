@@ -27,4 +27,6 @@ public class Member {
 	private String email;
 	
 	private Long eco_point;
+	
+	private String profileImagePath; 
 }
