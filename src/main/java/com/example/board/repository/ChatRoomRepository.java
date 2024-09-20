@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
+	List<ChatRoom> findByMember(Member member);
+	List<ChatRoom> findByProduct_Member(Member productOwner);
 	List<ChatRoom> findAllByProduct(Product product);
 	ChatRoom findByProductAndMember(Product product, Member member);
 	@Query("SELECT cr FROM ChatRoom cr WHERE cr.product.id = :productId AND cr.member.id = :memberId")
