@@ -53,6 +53,8 @@ public class MemberService {
 //        this.memberRepository = memberRepository;
 //        this.passwordEncoder = new BCryptPasswordEncoder(); // BCryptPasswordEncoder 인스턴스 생성
 //    }
+	
+
 
 	@Transactional
 	public void saveMember(MemberJoinForm memberJoinForm) {
@@ -81,10 +83,15 @@ public class MemberService {
 
 		memberRepository.save(member);
 	}
+	
+	public void saveMember(Member member) {
+	    memberRepository.save(member);
+	}
 
 	public Member findMemberById(String member_id) {
 		return memberRepository.findById(member_id).orElse(null);
 	}
+	
 
 	@Transactional
 	public boolean deleteMember(String member_id) {
@@ -242,4 +249,7 @@ public class MemberService {
 			return dto;
 		}).collect(Collectors.toList());
 	}
+	
+	
+
 }

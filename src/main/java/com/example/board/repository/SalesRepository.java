@@ -10,14 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import com.example.board.model.member.Member;
 import com.example.board.model.product.Purchase;
-
+import com.example.board.model.product.Sales;
 
 @Repository
-public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
+public interface SalesRepository extends JpaRepository<Sales, Long> {
 
+	@Query("SELECT s FROM Sales s WHERE s.seller.member_id = :memberId")
+    List<Sales> findBySellerId(@Param("memberId") String memberId);
 
-    @Query("SELECT p FROM Purchase p WHERE p.buyer.member_id = :memberId")
-    List<Purchase> findByBuyerId(@Param("memberId") String memberId);
-    
-    
 }

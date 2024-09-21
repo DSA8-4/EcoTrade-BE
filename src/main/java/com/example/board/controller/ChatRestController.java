@@ -1,57 +1,123 @@
 package com.example.board.controller;
 
-import java.util.List;
-
+import com.example.board.dto.ChatMessageDTO;
+import com.example.board.dto.ChatRoomDTO;
+import com.example.board.dto.ChatRoomWithLastMessageDTO;
+import com.example.board.model.chat.ChatRoom;
+import com.example.board.model.chat.CreateRoomRequest;
+import com.example.board.model.member.Member;
+import com.example.board.model.product.Product;
+import com.example.board.service.ChatService;
+import com.example.board.service.MemberService;
+import com.example.board.service.ProductService;
+import com.example.board.util.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.example.board.model.chat.ChatMessage;
-import com.example.board.model.chat.ChatRoom;
-import com.example.board.service.ChatService;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import lombok.RequiredArgsConstructor;
-
+@Slf4j
 @RestController
 @RequestMapping("chat")
 @RequiredArgsConstructor
 public class ChatRestController {
 
 	private final ChatService chatService;
+	private final ProductService productService;
+	private final MemberService memberService;
+	private final JwtTokenProvider jwtTokenProvider;
+//	private final SimpMessagingTemplate messagingTemplate;
+//	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@PostMapping("rooms/createRoom")
-	public ResponseEntity<ChatRoom> createRoom(@RequestBody String roomName) {
-	    ChatRoom existingRoom = chatService.getRoom(roomName);
+	public ResponseEntity<ChatRoomDTO> createRoom(@RequestBody CreateRoomRequest request,
+												  @RequestHeader("Authorization") String authorizationHeader) {
+	    String token = authorizationHeader.replace("Bearer ", "");
 	    
-	    if (existingRoom != null) {
-	        return ResponseEntity.status(HttpStatus.CONFLICT).build(); // 409 Conflict
+	    if (!jwtTokenProvider.validateToken(token)) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
+	    
+	    log.info("chatroom: {}",request.getMemberId());
+	    log.info("chatroom: {}",request.getProductId());
+	    String memberId = request.getMemberId();
+	    Product product = productService.findProduct(request.getProductId());
+	    Member member = memberService.findMemberById(memberId);
+
+	    if (product == null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	    }
 
-	    ChatRoom newRoom = chatService.createRoom(roomName);
-	    return ResponseEntity.ok(newRoom); // 200 OK with the new room details
-	}
-	
-	@GetMapping("/rooms")
-	public ResponseEntity<List<ChatRoom>> getAllRooms() {
-		return ResponseEntity.ok(chatService.getAllRooms());
+	    try {
+			ChatRoomDTO chatRoomDTO = chatService.createChatRoom(product, member);
+
+
+			return ResponseEntity.ok(chatRoomDTO);
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
 	}
 
-	@GetMapping("/rooms/{id}")
-	public ChatRoom getChatRoom(@PathVariable("room_name") Long id) {
-		return chatService.getRoomById(id);
+	@GetMapping("/rooms/list")
+	public ResponseEntity<List<ChatRoomWithLastMessageDTO>> getUserChatRooms(@RequestHeader("Authorization") String authorizationHeader) {
+		String token = authorizationHeader.replace("Bearer ", "");
+
+		if (!jwtTokenProvider.validateToken(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		String memberId = jwtTokenProvider.getMemberIdFromToken(token);
+		Member member = memberService.findMemberById(memberId);
+
+		if (member == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+
+		List<ChatRoom> chatRooms = chatService.getChatRoomsForMember(member);
+		List<ChatRoomWithLastMessageDTO> chatRoomDTOs = chatRooms.stream()
+				.map(chatRoom -> ChatRoomWithLastMessageDTO.fromEntity(chatRoom, chatService.getLastMessageForChatRoom(chatRoom)))
+				.collect(Collectors.toList());
+
+		return ResponseEntity.ok(chatRoomDTOs);
 	}
 
-	
-	@GetMapping("messages/{room_id}")
-	public ResponseEntity<List<ChatMessage>> getChatRoomMessages(@PathVariable("room_id") Long id) {
-		List<ChatMessage> messages = chatService.getMessagesByChatRoomId(id);
+	@GetMapping("rooms/{roomId}/messages")
+	public ResponseEntity<List<ChatMessageDTO>> getMessagesForRoom(@PathVariable("roomId") Long roomId,
+																   @RequestHeader("Authorization") String authorizationHeader) {
+		String token = authorizationHeader.replace("Bearer ", "");
+
+		if (!jwtTokenProvider.validateToken(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		ChatRoom chatRoom = chatService.getRoomById(roomId);
+		if (chatRoom == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+
+		List<ChatMessageDTO> messages = chatService.getMessagesForChatRoom(roomId);
 		return ResponseEntity.ok(messages);
 	}
 
+	@DeleteMapping("/rooms/{roomId}")
+	public ResponseEntity<Void> deleteChatRoomIfEmpty(@PathVariable("roomId") Long roomId) {
+		ChatRoom chatRoom = chatService.getRoomById(roomId);
+
+		if (chatRoom == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+
+		List<ChatMessageDTO> messages = chatService.getMessagesForChatRoom(roomId);
+
+		if (messages.isEmpty()) {
+			chatService.deleteChatRoom(chatRoom);
+			return ResponseEntity.ok().build();
+		}
+
+		return ResponseEntity.status(HttpStatus.CONFLICT).build();
+	}
 }

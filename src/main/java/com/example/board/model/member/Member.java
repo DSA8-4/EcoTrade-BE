@@ -31,9 +31,8 @@ public class Member {
 	@Column(length=100)
 	private String email;
 	
-	private Long eco_point;
-	
 	@OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
     private ProfileImage profileImage; // ProfileImage 객체 추가
+	private Long eco_point = 0L;
 }
