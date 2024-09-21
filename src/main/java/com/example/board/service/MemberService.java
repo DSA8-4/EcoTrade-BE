@@ -80,6 +80,7 @@ public class MemberService {
 		member.setPassword(PasswordUtils.hashPassword(memberJoinForm.getPassword())); // 비밀번호 해시화
 		member.setName(memberJoinForm.getName());
 		member.setEmail(memberJoinForm.getEmail());
+		member.setArea(memberJoinForm.getArea());
 
 		memberRepository.save(member);
 	}
@@ -117,6 +118,8 @@ public class MemberService {
 				memberToUpdate.setEmail(updateRequest.getEmail());
 			if (updateRequest.getNewPassword() != null)
 				memberToUpdate.setPassword(passwordEncoder.encode(updateRequest.getNewPassword())); // 비밀번호 해시화
+			if(updateRequest.getArea() != null)
+				memberToUpdate.setArea(updateRequest.getArea());
 
 			return memberRepository.save(memberToUpdate); // 성공적으로 업데이트된 Member 객체 반환
 		}
@@ -198,7 +201,8 @@ public class MemberService {
                 ? member.getProfileImage().getUrl()
                 : null;
 
-        return new MemberProfileDto(member.getMember_id(), member.getName(), member.getEmail(), member.getEco_point(), member.getProfileImage());
+        return new MemberProfileDto(member.getMember_id(), member.getName(), member.getEmail(), 
+        							member.getEco_point(), member.getProfileImage(), member.getArea());
     }
     
     

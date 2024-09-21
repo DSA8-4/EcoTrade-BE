@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
+import com.example.board.dto.PasswordUpdateRequest;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
@@ -174,7 +175,7 @@ public class MemberController {
 
 
 	// 마이페이지
-	@GetMapping("/mypage/{member_id}")
+	@GetMapping("/mypage")
 	public ResponseEntity<MemberProfileDto> getMemberProfile(@RequestHeader("Authorization") String token) {
 		String memberId = jwtTokenProvider.getUserIdFromToken(token.replace("Bearer ", ""));
 		if (memberId == null) {
@@ -241,6 +242,38 @@ public class MemberController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
+	
+	//비밀번호 수정
+
+    @PutMapping("/password/update")
+    public ResponseEntity<Map<String, String>> updatePassword(
+            @RequestHeader("Authorization") String token,
+            @RequestBody PasswordUpdateRequest passwordUpdateRequest) {
+
+        try {
+            // JWT 토큰에서 사용자 ID 추출
+            String memberId = jwtTokenProvider.getUserIdFromToken(token.replace("Bearer ", ""));
+            
+            // 비밀번호 변경 시도
+            boolean success = memberService.updatePassword(
+                    memberId,
+                    passwordUpdateRequest.getCurrentPassword(),
+                    passwordUpdateRequest.getNewPassword(),
+                    passwordUpdateRequest.getConfirmNewPassword()
+            );
+            
+            if (success) {
+                return ResponseEntity.ok(Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("message", "비밀번호 변경에 실패했습니다. 현재 비밀번호 또는 새로운 비밀번호 확인을 해주세요."));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "서버 오류로 비밀번호 변경에 실패했습니다."));
+        }
+    }
+
 
 	// 판매 내역 조회
 	@GetMapping("mypage/sales/{member_id}")
