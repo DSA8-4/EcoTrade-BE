@@ -1,24 +1,40 @@
 package com.example.board.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
+import com.example.board.model.member.ProfileImage;
+import com.example.board.model.member.ProfileImageRequest;
 import com.example.board.model.product.Product;
+import com.example.board.repository.MemberRepository;
+import com.example.board.repository.ProfileImageRepository;
 import com.example.board.service.MemberService;
 import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
+import java.io.FileInputStream;
+
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+
 
 @Slf4j
 @RestController
@@ -27,11 +43,18 @@ public class MemberController {
 	private final MemberService memberService;
 	private final JwtTokenProvider jwtTokenProvider;
 
-	public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider) {
+	public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider, MemberRepository memberRepository) {
 		this.memberService = memberService;
 		this.jwtTokenProvider = jwtTokenProvider;
+		this.memberRepository = memberRepository;
 
 	}
+	
+	@Autowired
+	private ProfileImageRepository profileImageRepository;
+    private final MemberRepository memberRepository;
+	
+	
 
 	// 유저 등록
 	@PostMapping("/register")
@@ -74,6 +97,81 @@ public class MemberController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 	}
+	
+	// 프로필 이미지 업로드 API
+	@PostMapping("/profile/upload")
+	public ResponseEntity<Map<String, String>> uploadProfileImage(
+	        @RequestBody ProfileImageRequest profileImageRequest,
+	        @RequestHeader("Authorization") String token) {
+	    
+	    log.info("profileImageRequest: {}", profileImageRequest);
+	    
+	    try {
+	        // JWT 토큰에서 사용자 ID 추출
+	        String memberId = jwtTokenProvider.getUserIdFromToken(token.replace("Bearer ", ""));
+	        
+	        // 요청에서 받은 memberId와 비교 (선택 사항)
+	        if (!memberId.equals(profileImageRequest.getMemberId())) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "권한이 없습니다."));
+	        }
+
+	        // 프로필 이미지 URL 처리 (예: 저장 또는 업데이트 로직)
+	        String imageUrl = profileImageRequest.getUrl();
+	        // 여기에 imageUrl을 파일로 저장하는 로직을 추가하세요
+	        
+	        memberService.saveProfileImage(memberId, imageUrl);
+
+	        Map<String, String> response = new HashMap<>();
+	        response.put("message", "프로필 이미지가 성공적으로 업로드되었습니다.");
+	        response.put("imageUrl", imageUrl); // 필요한 경우 이미지 URL 반환
+
+	        return ResponseEntity.ok(response);
+	    } catch (IllegalArgumentException e) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+	    } catch (Exception e) {
+	        log.error("프로필 이미지 업로드 실패", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "업로드 중 오류 발생"));
+	    }
+	}
+
+
+	
+	@GetMapping("/profile/images/{memberId}")
+	public ResponseEntity<Resource> getProfileImage(@PathVariable("memberId") String memberId) {
+	    try {
+	        // memberId로 Member 객체 조회
+	        Member member = memberRepository.findById(memberId)
+	                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+	        // Member로 프로필 이미지 정보를 데이터베이스에서 조회
+	        ProfileImage profileImage = profileImageRepository.findByMember(member);
+
+	        if (profileImage == null) {
+	            return ResponseEntity.notFound().build(); // 프로필 이미지가 없으면 404 반환
+	        }
+
+	        File file = new File(profileImage.getUrl());
+	        if (!file.exists()) {
+	            return ResponseEntity.notFound().build(); // 파일이 없으면 404 반환
+	        }
+
+	        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+	        return ResponseEntity.ok()
+	                .contentType(MediaType.IMAGE_JPEG) // 파일 형식에 맞게 수정
+	                .body(resource);
+	    } catch (IOException e) {
+	        log.error("이미지 로드 실패", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    } catch (Exception e) {
+	        log.error("프로필 이미지 조회 실패", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
+	}
+
+
+
+
+
 
 	// 마이페이지
 	@GetMapping("/mypage/{member_id}")

@@ -1,8 +1,13 @@
 package com.example.board.model.member;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -26,5 +31,8 @@ public class Member {
 	@Column(length=100)
 	private String email;
 	
+	@OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
+    private ProfileImage profileImage; // ProfileImage 객체 추가
 	private Long eco_point = 0L;
 }
