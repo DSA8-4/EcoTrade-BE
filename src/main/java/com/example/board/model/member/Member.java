@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
@@ -35,4 +37,8 @@ public class Member {
 	@JsonManagedReference
     private ProfileImage profileImage; // ProfileImage 객체 추가
 	private Long eco_point = 0L;
+	
+	//지역
+	@Enumerated(EnumType.STRING)
+	private Area area;
 }

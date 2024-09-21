@@ -1,5 +1,7 @@
 package com.example.board.model.member;
 
+import com.example.board.model.product.Category;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -16,9 +18,9 @@ public class MemberJoinForm {
 	@NotBlank(message = "닉네임을 지어주세요")
 	private String name;
 	
-
-	
 	private String email;
+	
+	private Area area; 
 	
 	public static Member toMember(MemberJoinForm memberJoinForm) {
 		Member member = new Member();
@@ -27,6 +29,7 @@ public class MemberJoinForm {
 		member.setPassword(memberJoinForm.getPassword());
 		member.setName(memberJoinForm.getName());
 		member.setEmail(memberJoinForm.getEmail());
+		member.setArea(memberJoinForm.getArea());
 		
 		return member;
 	}
