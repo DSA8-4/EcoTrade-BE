@@ -18,5 +18,6 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
     @Query("SELECT p FROM Purchase p WHERE p.buyer.member_id = :memberId")
     List<Purchase> findByBuyerId(@Param("memberId") String memberId);
-
+    
+    
 }
