@@ -127,7 +127,7 @@ public class ProductController {
 	}
 
 	@PutMapping("/update/{productId}")
-	public ResponseEntity<Product> updateProduct(@PathVariable("productId") Long productId,
+	public ResponseEntity<Void> updateProduct(@PathVariable("productId") Long productId,
 			@RequestBody ProductWriteForm productWriteForm) {
 		log.info("Updating product: {}", productWriteForm);
 		try {
@@ -158,7 +158,7 @@ public class ProductController {
 			// 업데이트된 상품 정보 저장 (반환값 없이 저장)
 			productService.save(existingProduct);
 
-			return ResponseEntity.ok(existingProduct);
+			return ResponseEntity.ok().build();
 		} catch (Exception e) {
 			log.error("Error occurred while updating product", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -217,7 +217,8 @@ public class ProductController {
 	        log.info("Creating new purchase...");
 	        // Create a new purchase
 	        Purchase purchase = new Purchase();
-	        purchase.setBuyer(memberService.findMemberById(memberId)); // Get the buyer (member)
+	        Member buyer = memberService.findMemberById(memberId); // Get the buyer (member)
+	        purchase.setBuyer(buyer);
 	        purchase.setProduct(product);
 	        purchase.setPurchaseDate(LocalDateTime.now());
 
@@ -231,13 +232,17 @@ public class ProductController {
 
 	        log.info("Updating member's eco points...");
 	        // 적립 포인트 계산 및 저장
-	        Member buyer = memberService.findMemberById(memberId);
-//	        Member seller = memberService.findMemberById(memberId);
-	        long ecoPointBuyer = Math.round(product.getPrice() * 0.01);
-//	        long ecoPointSeller = Math.round(product.getPrice() * 0.005);
-//	        seller.setEco_point(seller.getEco_point() + ecoPointSeller);
+	        long ecoPointBuyer = Math.round(product.getPrice() * 0.01); // 구매자 포인트
+	        long ecoPointSeller = Math.round(product.getPrice() * 0.005); // 판매자 포인트
+	        
+	        // 구매자 포인트 적립
 	        buyer.setEco_point(buyer.getEco_point() + ecoPointBuyer);
-//	        memberService.saveMember(buyer);
+	        memberService.saveMember(buyer);
+
+	        // 판매자 포인트 적립 (상품 작성자가 판매자)
+	        Member seller = product.getMember();
+	        seller.setEco_point(seller.getEco_point() + ecoPointSeller);
+	        memberService.saveMember(seller);
 	        
 	        return ResponseEntity.ok("Product purchased successfully.");
 	    } catch (Exception e) {
@@ -245,4 +250,5 @@ public class ProductController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
 	    }
 	}
+
 }
