@@ -24,10 +24,12 @@ import com.example.board.dto.PurchaseDTO;
 import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
+import com.example.board.model.member.ProfileImage;
 import com.example.board.model.product.Product;
 import com.example.board.model.product.Purchase;
 import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProductRepository;
+import com.example.board.repository.ProfileImageRepository;
 import com.example.board.repository.PurchaseRepository;
 import com.example.board.util.PasswordUtils;
 
@@ -41,6 +43,7 @@ public class MemberService {
 	private final PasswordEncoder passwordEncoder;
 	private final ProductRepository productRepository;
 	private final PurchaseRepository purchaseRepository;
+	private final ProfileImageRepository profileImageRepository;
 	
 	@Value("${profile.images.upload-dir:/path/to/profile-images/}")
     private String uploadDir; // @Value 어노테이션을 사용하여 프로퍼티 값 주입
@@ -133,59 +136,65 @@ public class MemberService {
 	
     // 프로필 이미지 업로드 로직
 	public String uploadProfileImage(String memberId, MultipartFile file) throws IOException {
-	    File uploadDir = new File("C:/Users/SUN/path/to/profile-images");
+	    File uploadDir = new File(this.uploadDir);
 	    if (!uploadDir.exists()) {
-	        uploadDir.mkdirs();  // 디렉토리가 존재하지 않으면 생성
+	        uploadDir.mkdirs();
 	    }
 
 	    String fileName = memberId + "-profile-image.jpg";
 	    File destinationFile = new File(uploadDir, fileName);
 	    file.transferTo(destinationFile);
 
-	    // 프로필 이미지 경로를 저장
+	    // 회원 조회
 	    Member member = memberRepository.findById(memberId)
 	            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-	    member.setProfileImagePath(destinationFile.getAbsolutePath());
-	    memberRepository.save(member);
 
-	    // 클라이언트에게 반환할 이미지 URL
-	    return "/members/profile/images/" + fileName; // URL 경로 설정
+	    // 기존 프로필 이미지가 있는 경우 삭제
+	    if (member.getProfileImage() != null) {
+	        profileImageRepository.delete(member.getProfileImage());
+	    }
+
+	    // 새로운 프로필 이미지 생성 및 저장
+	    ProfileImage profileImage = new ProfileImage(destinationFile.getAbsolutePath(), member);
+	    profileImageRepository.save(profileImage);
+
+	    // Member의 ProfileImage 설정
+	    member.setProfileImage(profileImage);
+	    memberRepository.save(member); // Member 저장
+
+	    return fileName;
 	}
+
 
     
     @Transactional
-    public void saveProfileImage(String memberId, MultipartFile file) throws IOException {
-        // 업로드할 디렉토리 경로 설정
-        File uploadDir = new File("C:/Users/SUN/path/to/profile-images");
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();  // 디렉토리가 존재하지 않으면 생성
-        }
-
-        // 파일 저장
-        String fileName = memberId + "-profile-image.jpg"; // 파일 이름 설정
-        File destinationFile = new File(uploadDir, fileName);
-        file.transferTo(destinationFile);
-
-        // Member 객체를 가져와서 프로필 이미지 경로를 저장
+    public void saveProfileImage(String memberId, String imageUrl) {
+        // Member를 DB에서 찾아서 해당 프로필 이미지 저장
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-        member.setProfileImagePath(destinationFile.getAbsolutePath());
-        memberRepository.save(member);
+
+        ProfileImage profileImage = new ProfileImage();
+        profileImage.setMember(member);
+        profileImage.setUrl(imageUrl); // 이미지 경로를 설정
+
+        profileImageRepository.save(profileImage); // DB에 저장
     }
 
+
+	@Transactional
+    public MemberProfileDto getMemberProfile(String memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+        // 프로필 이미지 경로를 문자열로 가져옵니다.
+        String profileImagePath = member.getProfileImage() != null
+                ? member.getProfileImage().getUrl()
+                : null;
+
+        return new MemberProfileDto(member.getMember_id(), member.getName(), member.getEmail(), member.getEco_point(), member.getProfileImage());
+    }
     
-
-
-	public MemberProfileDto getMemberProfile(String member_id) {
-		Member member = memberRepository.findById(member_id)
-				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-		
-		// 프로필 이미지 경로 설정 (예: 서버 디렉토리 또는 URL)
-	    String profileImagePath = "/profile-images/" + member_id + ".jpg";
-
-		return new MemberProfileDto(member.getMember_id(), member.getName(), member.getEmail(), member.getEco_point(), profileImagePath);
-	}
-
+    
 	@Transactional
 	public boolean updatePassword(String member_id, String currentPassword, String newPassword,
 			String confirmNewPassword) {
