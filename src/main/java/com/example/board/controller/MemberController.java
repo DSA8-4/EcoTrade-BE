@@ -175,7 +175,7 @@ public class MemberController {
 
 
 	// 마이페이지
-	@GetMapping("/mypage/{member_id}")
+	@GetMapping("/mypage")
 	public ResponseEntity<MemberProfileDto> getMemberProfile(@RequestHeader("Authorization") String token) {
 		String memberId = jwtTokenProvider.getUserIdFromToken(token.replace("Bearer ", ""));
 		if (memberId == null) {
