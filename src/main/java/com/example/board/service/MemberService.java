@@ -99,6 +99,10 @@ public class MemberService {
 		}
 		return false;
 	}
+	
+	public Optional<Member> findById(String memberId) {
+	    return memberRepository.findById(memberId);
+	}
 
 	@Transactional
 	public Member updateMemberInfo(String member_id, MemberUpdateRequest updateRequest) {
@@ -112,14 +116,18 @@ public class MemberService {
 				memberToUpdate.setName(updateRequest.getName());
 			if (updateRequest.getEmail() != null)
 				memberToUpdate.setEmail(updateRequest.getEmail());
-			if (updateRequest.getNewPassword() != null)
-				memberToUpdate.setPassword(passwordEncoder.encode(updateRequest.getNewPassword())); // 비밀번호 해시화
+//			if (updateRequest.getNewPassword() != null)
+//				memberToUpdate.setPassword(passwordEncoder.encode(updateRequest.getNewPassword())); // 비밀번호 해시화
 			if (updateRequest.getArea() != null)
 				memberToUpdate.setArea(updateRequest.getArea());
 
 			return memberRepository.save(memberToUpdate); // 성공적으로 업데이트된 Member 객체 반환
 		}
 		return null; // 업데이트 실패
+	}
+	
+	public void save(Member member) {
+	    memberRepository.save(member);
 	}
 
 	public boolean login(String member_id, String password) {

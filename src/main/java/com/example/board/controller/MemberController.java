@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -49,10 +50,16 @@ public class MemberController {
 		this.memberRepository = memberRepository;
 
 	}
+	
+	
 
 	@Autowired
 	private ProfileImageRepository profileImageRepository;
 	private final MemberRepository memberRepository;
+	
+	public Optional<Member> findById(String memberId) {
+	    return memberRepository.findById(memberId);
+	}
 
 	// 유저 등록
 	@PostMapping("/register")
@@ -216,18 +223,35 @@ public class MemberController {
 
 	// 유저 정보 수정
 	@PutMapping("/{member_id}")
-	public ResponseEntity<Member> updateMemberInfo(@PathVariable("member_id") String member_id,
-			@RequestBody MemberUpdateRequest updateRequest) {
+	public ResponseEntity<Void> updateMemberInfo(@PathVariable("member_id") String member_id,
+			 @RequestBody MemberUpdateRequest updateRequest) {
 		try {
-			Member updatedMember = memberService.updateMemberInfo(member_id, updateRequest);
-			if (updatedMember != null) {
-				return ResponseEntity.ok(updatedMember);
-			} else {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-			}
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
+	        // 기존 회원 정보 불러오기
+	        Optional<Member> existingMemberOpt = memberService.findById(member_id);
+	        if (!existingMemberOpt.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+	        }
+
+	        Member existingMember = existingMemberOpt.get();
+
+	        // 정보 업데이트
+	        existingMember.setName(updateRequest.getName());
+	        existingMember.setEmail(updateRequest.getEmail());
+	        
+	        // 프로필 이미지 업데이트 (단일 이미지)
+	        if (updateRequest.getProfileImage() != null) {
+	            existingMember.getProfileImage().setUrl(updateRequest.getProfileImage().getUrl());
+	        }
+	        
+	        existingMember.setArea(updateRequest.getArea());
+
+	        // 업데이트된 회원 정보 저장 (반환값 없이 저장)
+	        memberService.save(existingMember);
+
+	        return ResponseEntity.ok().build();
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
 	}
 
 	// 비밀번호 수정
