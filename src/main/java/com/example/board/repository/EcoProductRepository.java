@@ -1,9 +1,11 @@
 package com.example.board.repository;
 
-import org.springframework.data.repository.CrudRepository;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.board.model.ecoProduct.EcoProduct;
 
-public interface EcoProductRepository extends CrudRepository<EcoProduct, Long> {
-
+public interface EcoProductRepository extends JpaRepository<EcoProduct, Long> {
+	List<EcoProduct> findByTitleContaining(String searchText);
 }

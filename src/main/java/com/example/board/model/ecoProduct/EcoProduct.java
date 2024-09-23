@@ -29,9 +29,6 @@ public class EcoProduct {
     private Long price; 
     private String content; 
     
-    @Enumerated(EnumType.STRING)
-	private ProductStatus status; // 거래 상태 필드 추가
-    
     @OneToMany(mappedBy = "ecoProduct", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	private List<EcoProductImage> ecoProductImages;
