@@ -47,9 +47,8 @@ public class ChatService {
         return allRooms;
     }
 
-    public String getLastMessageForChatRoom(ChatRoom chatRoom) {
-        ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderByIdDesc(chatRoom);
-        return lastMessage != null ? lastMessage.getContent() : null;
+    public ChatMessage getLastMessageForChatRoom(ChatRoom chatRoom) {
+        return chatMessageRepository.findTopByChatRoomOrderByIdDesc(chatRoom);
     }
 
     public List<ChatMessageDTO> getMessagesForChatRoom(Long chatRoomId) {
