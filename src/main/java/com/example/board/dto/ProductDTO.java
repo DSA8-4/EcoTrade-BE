@@ -20,6 +20,7 @@ public class ProductDTO {
     private LocalDateTime createdTime;
     private List<String> imageUrls;
     private Category category;
+    private String seller;
     public static ProductDTO fromEntity(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setProductId(product.getProduct_id());
@@ -33,6 +34,7 @@ public class ProductDTO {
             .map(Image::getUrl)
             .collect(Collectors.toList()));
         dto.setCategory(product.getCategory());
+        dto.setSeller(product.getMember().getName());
         return dto;
     }
 }
