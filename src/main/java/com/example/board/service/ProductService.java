@@ -87,7 +87,7 @@ public class ProductService {
 	// 상품 수정
 	@Transactional
 	public void updateProduct(Product updateProduct, boolean isFileRemoved, MultipartFile file) {
-		Product findProduct = findProduct(updateProduct.getProduct_id());
+		Product findProduct = findProduct(updateProduct.getId());
 
 		findProduct.setTitle(updateProduct.getTitle());
 		findProduct.setContents(updateProduct.getContents());
@@ -98,7 +98,7 @@ public class ProductService {
 	// 게시물 삭제
 	@Transactional
 	public void removeProduct(Product product) {
-		productRepository.deleteById(product.getProduct_id());
+		productRepository.deleteById(product.getId());
 	}
 
 	// 게시글 전체 목록

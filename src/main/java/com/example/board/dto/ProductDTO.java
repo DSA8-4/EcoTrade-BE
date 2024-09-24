@@ -23,7 +23,7 @@ public class ProductDTO {
     private String seller;
     public static ProductDTO fromEntity(Product product) {
         ProductDTO dto = new ProductDTO();
-        dto.setProductId(product.getProduct_id());
+        dto.setProductId(product.getId());
         dto.setTitle(product.getTitle());
         dto.setContents(product.getContents());
         dto.setPrice(product.getPrice());

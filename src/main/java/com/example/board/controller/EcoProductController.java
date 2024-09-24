@@ -35,7 +35,7 @@ public class EcoProductController {
 	private final EcoProductService ecoProductService;
 	private final MemberService memberService;
 	private final JwtTokenProvider jwtTokenProvider;
-	
+
 	// 에코포인트로만 구매 가능한 상품 등록
 	@PostMapping("/register")
 	public ResponseEntity<String> registerEcoPointOnlyProduct(@RequestParam(name = "title") String title,
@@ -121,7 +121,7 @@ public class EcoProductController {
 					.body("Error during product update: " + e.getMessage());
 		}
 	}
-	
+
 	@GetMapping("/list")
 	public ResponseEntity<List<EcoProductDTO>> list(
 			@RequestParam(value = "searchText", required = false) String searchText) {
@@ -129,11 +129,12 @@ public class EcoProductController {
 				? ecoProductService.findSearch(searchText)
 				: ecoProductService.findAll();
 
-		List<EcoProductDTO> ecoProductDTOs = ecoProductList.stream().map(EcoProductDTO::fromEntity).collect(Collectors.toList());
+		List<EcoProductDTO> ecoProductDTOs = ecoProductList.stream().map(EcoProductDTO::fromEntity)
+				.collect(Collectors.toList());
 
 		return ResponseEntity.ok(ecoProductDTOs);
 	}
-	
+
 	@GetMapping("/detail/{id}")
 	public ResponseEntity<EcoProductDTO> detail(@PathVariable("id") Long id) {
 		Optional<EcoProduct> ecoProductOpt = ecoProductService.findById(id);
@@ -149,13 +150,13 @@ public class EcoProductController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
-	
+
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deleteProduct(@PathVariable("id") Long id) {
-			ecoProductService.deleteProduct(id);
-			return ResponseEntity.ok("Product deleted successfully.");
+		ecoProductService.deleteProduct(id);
+		return ResponseEntity.ok("Product deleted successfully.");
 	}
-	
+
 	@PostMapping("/purchase/{id}")
 	public ResponseEntity<String> purchaseEcoProduct(@PathVariable("id") Long id,
 			@RequestHeader("Authorization") String authorizationHeader) {
@@ -191,10 +192,16 @@ public class EcoProductController {
 			// Save the purchase
 			ecoProductService.savePurchase(purchase);
 
-
 			log.info("Updating member's eco points...");
 
 			// 구매자 포인트 차감
+			if (buyer.getEco_point() < ecoProduct.getPrice()) {
+				// 포인트 부족으로 인한 예외 처리
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body("Eco points are insufficient to complete the purchase.");
+			}
+
+			// 구매 가능 - 포인트 차감
 			buyer.setEco_point(buyer.getEco_point() - ecoProduct.getPrice());
 			memberService.saveMember(buyer);
 

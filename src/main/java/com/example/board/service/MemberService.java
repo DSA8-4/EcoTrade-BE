@@ -261,11 +261,13 @@ public class MemberService {
 
 		List<Purchase> purchases = purchaseRepository.findByBuyerId(memberId);
 		return purchases.stream().map(purchase -> {
-			// 판매자 정보를 설정
-			Member seller = purchase.getProduct().getMember();
-			purchase.setSellerInfo(seller); // 판매자 정보 설정
 
-			return PurchaseDTO.fromEntity(purchase); // DTO로 변환
+			PurchaseDTO dto = new PurchaseDTO();
+			dto.setId(purchase.getId());
+			dto.setProductId(purchase.getProduct().getId());
+			dto.setProductTitle(purchase.getProduct().getTitle());
+			dto.setPurchaseDate(purchase.getPurchaseDate());
+			return dto;
 
 		}).collect(Collectors.toList());
 	}
