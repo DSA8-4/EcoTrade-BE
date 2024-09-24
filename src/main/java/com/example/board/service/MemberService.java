@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
+import com.example.board.dto.ProductDTO;
 import com.example.board.dto.PurchaseDTO;
 import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.Member;
@@ -228,12 +229,29 @@ public class MemberService {
 
 	// 판매 이력 가져오기
 	@Transactional
-	public List<Product> getSalesHistory(String memberId) {
-		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+	public List<SalesDTO> getSalesHistory(String memberId) {
+	    // 멤버 존재 여부 확인
+	    Member member = memberRepository.findById(memberId)
+	            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-		return productRepository.findByMember(member);
+	    // 판매 이력 가져오기
+	    List<Product> salesHistory = productRepository.findByMember(member);
+
+	    return salesHistory.stream().map(product -> {
+	        // SalesDTO로 변환
+	        SalesDTO salesDTO = new SalesDTO();
+//	        salesDTO.setMember_id(product.getMember().getMember_id()); // 판매자 ID
+	        salesDTO.setProductId(product.getProduct_id());                  // 제품 ID
+	        salesDTO.setTitle(product.getTitle());                    // 제품 제목
+	        salesDTO.setPrice(product.getPrice());                    // 가격
+	        salesDTO.setContents(product.getContents());			//내용   
+	        salesDTO.setCreatedTime(product.getCreated_time());        // 생성 시간
+
+	        return salesDTO; // SalesDTO 반환
+	    }).collect(Collectors.toList());
 	}
+
+
 
 	// 구매 이력 가져오기
 	@Transactional

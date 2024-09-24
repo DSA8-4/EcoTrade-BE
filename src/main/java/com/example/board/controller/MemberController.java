@@ -1,6 +1,5 @@
 package com.example.board.controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -8,10 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,18 +16,17 @@ import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.dto.PasswordUpdateRequest;
 import com.example.board.dto.PurchaseDTO;
+import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
 import com.example.board.model.member.ProfileImage;
 import com.example.board.model.member.ProfileImageRequest;
-import com.example.board.model.product.Product;
 import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProfileImageRepository;
 import com.example.board.service.MemberService;
 import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
-import java.io.FileInputStream;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -50,15 +45,13 @@ public class MemberController {
 		this.memberRepository = memberRepository;
 
 	}
-	
-	
 
 	@Autowired
 	private ProfileImageRepository profileImageRepository;
 	private final MemberRepository memberRepository;
-	
+
 	public Optional<Member> findById(String memberId) {
-	    return memberRepository.findById(memberId);
+		return memberRepository.findById(memberId);
 	}
 
 	// 유저 등록
@@ -138,7 +131,7 @@ public class MemberController {
 	}
 
 	@GetMapping("/profile/images/{memberId}")
-	public ResponseEntity<Resource> getProfileImage(@PathVariable("memberId") String memberId) {
+	public ResponseEntity<Map<String, String>> getProfileImage(@PathVariable("memberId") String memberId) {
 		try {
 			// memberId로 Member 객체 조회
 			Member member = memberRepository.findById(memberId)
@@ -148,23 +141,20 @@ public class MemberController {
 			ProfileImage profileImage = profileImageRepository.findByMember(member);
 
 			if (profileImage == null) {
-				return ResponseEntity.notFound().build(); // 프로필 이미지가 없으면 404 반환
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "프로필 이미지가 존재하지 않습니다."));
 			}
 
-			File file = new File(profileImage.getUrl());
-			if (!file.exists()) {
-				return ResponseEntity.notFound().build(); // 파일이 없으면 404 반환
-			}
+			// 이미지 URL을 Map으로 반환
+			Map<String, String> response = new HashMap<>();
+			response.put("message", "프로필 이미지 조회 성공");
+			response.put("imageUrl", profileImage.getUrl());
 
-			InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
-			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG) // 파일 형식에 맞게 수정
-					.body(resource);
-		} catch (IOException e) {
-			log.error("이미지 로드 실패", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			return ResponseEntity.ok(response);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
 		} catch (Exception e) {
 			log.error("프로필 이미지 조회 실패", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "이미지 조회 중 오류 발생"));
 		}
 	}
 
@@ -186,10 +176,13 @@ public class MemberController {
 
 	// 유저 1명 조회
 	@GetMapping("/{member_id}")
-	public ResponseEntity<Member> getMember(@PathVariable("member_id") String member_id) {
-		Member member = memberService.findMemberById(member_id);
-		if (member != null) {
-			return ResponseEntity.ok(member);
+	public ResponseEntity<MemberProfileDto> getMember(@PathVariable("member_id") String member_id) {
+		// MemberService에서 getMemberProfile 메서드를 호출
+		MemberProfileDto memberProfileDTO = memberService.getMemberProfile(member_id);
+
+		// DTO가 null이 아닌 경우 OK 응답, 그렇지 않으면 404 응답
+		if (memberProfileDTO != null) {
+			return ResponseEntity.ok(memberProfileDTO);
 		} else {
 			return ResponseEntity.notFound().build();
 		}
@@ -224,38 +217,37 @@ public class MemberController {
 	// 유저 정보 수정
 	@PutMapping("/{member_id}")
 	public ResponseEntity<Void> updateMemberInfo(@PathVariable("member_id") String member_id,
-			 @RequestBody MemberUpdateRequest updateRequest) {
+			@RequestBody MemberUpdateRequest updateRequest) {
 		try {
-	        // 기존 회원 정보 불러오기
-	        Optional<Member> existingMemberOpt = memberService.findById(member_id);
-	        if (!existingMemberOpt.isPresent()) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-	        }
+			// 기존 회원 정보 불러오기
+			Optional<Member> existingMemberOpt = memberService.findById(member_id);
+			if (!existingMemberOpt.isPresent()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
 
-	        Member existingMember = existingMemberOpt.get();
+			Member existingMember = existingMemberOpt.get();
 
-	        // 정보 업데이트
-	        existingMember.setName(updateRequest.getName());
-	        existingMember.setEmail(updateRequest.getEmail());
-	        
-	        // 프로필 이미지 업데이트 (단일 이미지)
-	        if (updateRequest.getProfileImage() != null) {
-	            existingMember.getProfileImage().setUrl(updateRequest.getProfileImage().getUrl());
-	        }
-	        
-	        existingMember.setArea(updateRequest.getArea());
+			// 정보 업데이트
+			existingMember.setName(updateRequest.getName());
+			existingMember.setEmail(updateRequest.getEmail());
 
-	        // 업데이트된 회원 정보 저장 (반환값 없이 저장)
-	        memberService.save(existingMember);
+			// 프로필 이미지 업데이트 (단일 이미지)
+			if (updateRequest.getProfileImage() != null) {
+				existingMember.getProfileImage().setUrl(updateRequest.getProfileImage().getUrl());
+			}
 
-	        return ResponseEntity.ok().build();
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-	    }
+			existingMember.setArea(updateRequest.getArea());
+
+			// 업데이트된 회원 정보 저장 (반환값 없이 저장)
+			memberService.save(existingMember);
+
+			return ResponseEntity.ok().build();
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
 	// 비밀번호 수정
-
 	@PutMapping("/password/update")
 	public ResponseEntity<Map<String, String>> updatePassword(@RequestHeader("Authorization") String token,
 			@RequestBody PasswordUpdateRequest passwordUpdateRequest) {
@@ -281,9 +273,8 @@ public class MemberController {
 	}
 
 	// 판매 내역 조회
-	@GetMapping("mypage/sales/{member_id}")
-	public ResponseEntity<List<Product>> getSalesHistory(@PathVariable("member_id") String memberId,
-			@RequestHeader("Authorization") String authorizationHeader) {
+	@GetMapping("mypage/sales")
+	public ResponseEntity<List<SalesDTO>> getSalesHistory(@RequestHeader("Authorization") String authorizationHeader) {
 
 		// Authorization 헤더에서 'Bearer' 접두어 제거
 		String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7)
@@ -296,21 +287,15 @@ public class MemberController {
 
 		String tokenMemberId = jwtTokenProvider.getUserIdFromToken(token);
 
-		// 요청한 멤버 ID와 토큰에서 얻은 멤버 ID가 일치하는지 확인
-		if (!memberId.equals(tokenMemberId)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-		}
-
 		// 판매 내역 조회
-		List<Product> salesHistory = memberService.getSalesHistory(memberId);
+		List<SalesDTO> salesHistoryDTO = memberService.getSalesHistory(tokenMemberId);
 
-		return ResponseEntity.ok(salesHistory);
-
+		return ResponseEntity.ok(salesHistoryDTO);
 	}
 
 	// 구매 내역 조회
-	@GetMapping("mypage/purchases/{member_id}")
-	public ResponseEntity<List<PurchaseDTO>> getPurchaseHistory(@PathVariable("member_id") String memberId,
+	@GetMapping("mypage/purchases")
+	public ResponseEntity<List<PurchaseDTO>> getPurchaseHistory(
 			@RequestHeader("Authorization") String authorizationHeader) {
 
 		// Authorization 헤더에서 'Bearer' 접두어 제거
@@ -324,13 +309,8 @@ public class MemberController {
 
 		String tokenMemberId = jwtTokenProvider.getUserIdFromToken(token);
 
-		// 요청한 멤버 ID와 토큰에서 얻은 멤버 ID가 일치하는지 확인
-		if (!memberId.equals(tokenMemberId)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-		}
-
 		// 구매 내역 조회
-		List<PurchaseDTO> purchaseHistory = memberService.getPurchaseHistory(memberId);
+		List<PurchaseDTO> purchaseHistory = memberService.getPurchaseHistory(tokenMemberId);
 
 		return ResponseEntity.ok(purchaseHistory);
 	}
