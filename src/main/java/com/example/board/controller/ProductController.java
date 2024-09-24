@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,14 +31,13 @@ public class ProductController {
 	public ResponseEntity<Void> newProduct(@RequestHeader("Authorization") String authorizationHeader,
 			@RequestBody ProductWriteForm productWriteForm) {
 		try {
-			String token = authorizationHeader.replace("Bearer ", "");
-			if (!jwtTokenProvider.validateToken(token)) {
-				log.info("invalid token");
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-			}
+			// 토큰 추출 및 검증 (static 메서드 호출)
+			String token = JwtTokenProvider.extractAndValidateToken(authorizationHeader, jwtTokenProvider);
 
-			String memberId = jwtTokenProvider.getUserIdFromToken(token); // Extract user ID or other details from token
+			// 토큰에서 사용자 ID 추출
+			String memberId = jwtTokenProvider.getUserIdFromToken(token);
 			log.info("User ID from token: {}", memberId);
+
 			Product product = ProductWriteForm.toProduct(productWriteForm);
 			product.setStatus(ProductStatus.TRADING); // 기본 상태 '거래중' 설정
 			Product createdProduct = productService.uploadProduct(product, memberId);
@@ -48,7 +48,11 @@ public class ProductController {
 				productService.saveImages(images);
 				createdProduct.setProductImages(images);
 			}
+
 			return ResponseEntity.ok().build();
+		} catch (ResponseStatusException e) {
+			log.error("Token validation error: {}", e.getMessage());
+			return ResponseEntity.status(e.getStatusCode()).body(null);
 		} catch (Exception e) {
 			log.error("Error occurred while registering product", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

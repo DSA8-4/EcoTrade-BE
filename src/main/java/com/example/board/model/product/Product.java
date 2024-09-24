@@ -16,7 +16,7 @@ public class Product {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long product_id; // 상품 아이디
+	private Long id; // 상품 아이디
 
 	private String title; // 상품 제목
 	private String contents; // 상품 내용

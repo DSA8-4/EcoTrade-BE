@@ -41,19 +41,4 @@ public class Purchase {
 
 	private LocalDateTime purchaseDate;
 
-	// 판매자의 닉네임과 프로필 이미지 추가
-	@Transient // 이 필드는 데이터베이스에 저장되지 않도록 설정
-	private String sellerName;
-
-	@Transient
-	private String sellerProfileImage;
-
-	// 판매자 정보를 설정하는 메서드
-//	public void setSellerInfo(Member seller) {
-//		if (seller != null) {
-//			this.sellerName = seller.getName(); // 판매자의 닉네임
-//			ProfileImage profileImage = seller.getProfileImage();
-//			this.sellerProfileImage = (profileImage != null) ? profileImage.getUrl() : null; // 프로필 이미지 URL
-//		}
-//	}
 }

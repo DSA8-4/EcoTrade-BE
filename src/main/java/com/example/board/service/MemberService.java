@@ -177,7 +177,7 @@ public class MemberService {
 		return purchases.stream().map(purchase -> {
 			PurchaseDTO dto = new PurchaseDTO();
 			dto.setId(purchase.getId());
-			dto.setProductId(purchase.getProduct().getProduct_id());
+			dto.setProductId(purchase.getProduct().getId());
 			dto.setProductTitle(purchase.getProduct().getTitle());
 			dto.setPurchaseDate(purchase.getPurchaseDate());
 			return dto;
