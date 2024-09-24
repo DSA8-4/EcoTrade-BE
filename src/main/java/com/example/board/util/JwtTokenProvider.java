@@ -92,6 +92,7 @@ public class JwtTokenProvider {
 
 
 
+
     public String getMemberIdFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject); // Assuming the member ID is stored in the subject claim
     }
@@ -107,5 +108,6 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
 
 }

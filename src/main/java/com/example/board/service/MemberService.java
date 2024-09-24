@@ -241,7 +241,7 @@ public class MemberService {
 	        // SalesDTO로 변환
 	        SalesDTO salesDTO = new SalesDTO();
 //	        salesDTO.setMember_id(product.getMember().getMember_id()); // 판매자 ID
-	        salesDTO.setProductId(product.getProduct_id());                  // 제품 ID
+	        salesDTO.setProductId(product.getId());                  // 제품 ID
 	        salesDTO.setTitle(product.getTitle());                    // 제품 제목
 	        salesDTO.setPrice(product.getPrice());                    // 가격
 	        salesDTO.setContents(product.getContents());			//내용   
@@ -264,7 +264,7 @@ public class MemberService {
 
 			PurchaseDTO dto = new PurchaseDTO();
 			dto.setId(purchase.getId());
-			dto.setProductId(purchase.getProduct().getId());
+			dto.setId(purchase.getProduct().getId());
 			dto.setProductTitle(purchase.getProduct().getTitle());
 			dto.setPurchaseDate(purchase.getPurchaseDate());
 			return dto;

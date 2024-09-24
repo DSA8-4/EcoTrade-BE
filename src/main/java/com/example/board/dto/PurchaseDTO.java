@@ -27,7 +27,7 @@ public class PurchaseDTO {
 	public static PurchaseDTO fromEntity(Purchase purchase) {
 		PurchaseDTO dto = new PurchaseDTO();
 		dto.setId(purchase.getId());
-		dto.setProduct(purchase.getProduct().getProduct_id());
+		dto.setProduct(purchase.getProduct().getId());
 		dto.setProductTitle(purchase.getProduct().getTitle());
 		dto.setPurchaseDate(purchase.getPurchaseDate());
 
