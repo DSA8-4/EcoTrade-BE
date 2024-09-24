@@ -9,7 +9,7 @@ import lombok.Setter;
 @Data
 @Getter @Setter
 public class SalesDTO {
-	private String member_id;
+//	private String member_id;
 	  private Long productId;
 	    private String title;
 	    private String contents;

@@ -1,7 +1,6 @@
 package com.example.board.util;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -81,6 +80,7 @@ public class JwtTokenProvider {
         final String username = getUserIdFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
+
     
     public static String extractAndValidateToken(String authorizationHeader, JwtTokenProvider jwtTokenProvider) {
         String token = authorizationHeader.replace("Bearer ", "");
@@ -88,6 +88,24 @@ public class JwtTokenProvider {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
         return token;
+    }
+
+
+
+    public String getMemberIdFromToken(String token) {
+        return getClaimFromToken(token, Claims::getSubject); // Assuming the member ID is stored in the subject claim
+    }
+
+    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return claimsResolver.apply(claims);
+    }
+    private Claims getAllClaimsFromToken(String token) {
+        return Jwts.parserBuilder() // Replace parser() with parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
 }

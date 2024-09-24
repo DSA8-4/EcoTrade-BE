@@ -1,7 +1,8 @@
 package com.example.board.controller;
 
+import com.example.board.dto.ChatMessageDTO;
 import com.example.board.dto.ChatRoomDTO;
-import com.example.board.model.chat.ChatMessage;
+import com.example.board.dto.ChatRoomWithLastMessageDTO;
 import com.example.board.model.chat.ChatRoom;
 import com.example.board.model.chat.CreateRoomRequest;
 import com.example.board.model.member.Member;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -28,7 +30,9 @@ public class ChatRestController {
 	private final ProductService productService;
 	private final MemberService memberService;
 	private final JwtTokenProvider jwtTokenProvider;
-	
+//	private final SimpMessagingTemplate messagingTemplate;
+//	private final ApplicationEventPublisher applicationEventPublisher;
+
 	@PostMapping("rooms/createRoom")
 	public ResponseEntity<ChatRoomDTO> createRoom(@RequestBody CreateRoomRequest request,
 												  @RequestHeader("Authorization") String authorizationHeader) {
@@ -49,28 +53,71 @@ public class ChatRestController {
 	    }
 
 	    try {
-	        return ResponseEntity.ok(chatService.createChatRoom(product, member));
+			ChatRoomDTO chatRoomDTO = chatService.createChatRoom(product, member);
+
+
+			return ResponseEntity.ok(chatRoomDTO);
 	    } catch (Exception e) {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	    }
 	}
 
-	
-	@GetMapping("/rooms")
-	public ResponseEntity<List<ChatRoom>> getAllRooms() {
-		return ResponseEntity.ok(chatService.getAllRooms());
+	@GetMapping("/rooms/list")
+	public ResponseEntity<List<ChatRoomWithLastMessageDTO>> getUserChatRooms(@RequestHeader("Authorization") String authorizationHeader) {
+		String token = authorizationHeader.replace("Bearer ", "");
+
+		if (!jwtTokenProvider.validateToken(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		String memberId = jwtTokenProvider.getMemberIdFromToken(token);
+		Member member = memberService.findMemberById(memberId);
+
+		if (member == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+
+		List<ChatRoom> chatRooms = chatService.getChatRoomsForMember(member);
+		List<ChatRoomWithLastMessageDTO> chatRoomDTOs = chatRooms.stream()
+				.map(chatRoom -> ChatRoomWithLastMessageDTO.fromEntity(chatRoom, chatService.getLastMessageForChatRoom(chatRoom)))
+				.collect(Collectors.toList());
+
+		return ResponseEntity.ok(chatRoomDTOs);
 	}
 
-	@GetMapping("/rooms/{id}")
-	public ChatRoom getChatRoom(@PathVariable("room_name") Long id) {
-		return chatService.getRoomById(id);
-	}
+	@GetMapping("rooms/{roomId}/messages")
+	public ResponseEntity<List<ChatMessageDTO>> getMessagesForRoom(@PathVariable("roomId") Long roomId,
+																   @RequestHeader("Authorization") String authorizationHeader) {
+		String token = authorizationHeader.replace("Bearer ", "");
 
-	
-	@GetMapping("messages/{room_id}")
-	public ResponseEntity<List<ChatMessage>> getChatRoomMessages(@PathVariable("room_id") Long id) {
-		List<ChatMessage> messages = chatService.getMessagesByChatRoomId(id);
+		if (!jwtTokenProvider.validateToken(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		ChatRoom chatRoom = chatService.getRoomById(roomId);
+		if (chatRoom == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+
+		List<ChatMessageDTO> messages = chatService.getMessagesForChatRoom(roomId);
 		return ResponseEntity.ok(messages);
 	}
 
+	@DeleteMapping("/rooms/{roomId}")
+	public ResponseEntity<Void> deleteChatRoomIfEmpty(@PathVariable("roomId") Long roomId) {
+		ChatRoom chatRoom = chatService.getRoomById(roomId);
+
+		if (chatRoom == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+
+		List<ChatMessageDTO> messages = chatService.getMessagesForChatRoom(roomId);
+
+		if (messages.isEmpty()) {
+			chatService.deleteChatRoom(chatRoom);
+			return ResponseEntity.ok().build();
+		}
+
+		return ResponseEntity.status(HttpStatus.CONFLICT).build();
+	}
 }
