@@ -92,5 +92,26 @@ public class MacroUtil {
 
 		return twoYearsAgo.plusSeconds(randomSeconds);
 	}
+	
+
+    // admin 계정 생성 메서드
+    public void registerAdmin() {
+        Member admin = new Member();
+        admin.setMember_id("admin");
+        admin.setName("admin");
+        admin.setEmail("admin@example.com");
+        admin.setPassword(PasswordUtils.hashPassword("admin")); // 비밀번호 해싱
+        admin.setEco_point(10000L); // 초기 포인트를 임의로 설정, 필요에 따라 조정 가능
+        admin.setArea(Area.SEOUL); // 지역을 지정, 필요에 따라 변경 가능
+
+        // 프로필 이미지 설정 (필요한 경우)
+        ProfileImage profileImage = new ProfileImage();
+        profileImage.setUrl("https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2Ffeature-image---undo-git-stash.webp?alt=media&token=759c3c7b-c8c9-4cc4-8417-6ee98eddef7a"); // 임의의 프로필 이미지 URL
+        profileImage.setMember(admin);
+        admin.setProfileImage(profileImage);
+
+        memberRepository.save(admin);
+        System.out.println("Admin account created successfully!");
+    }
 
 }
