@@ -3,6 +3,7 @@ package com.example.board.controller;
 import com.example.board.dto.ChatMessageDTO;
 import com.example.board.dto.ChatRoomDTO;
 import com.example.board.dto.ChatRoomWithLastMessageDTO;
+import com.example.board.model.chat.ChatMessage;
 import com.example.board.model.chat.ChatRoom;
 import com.example.board.model.chat.CreateRoomRequest;
 import com.example.board.model.member.Member;
@@ -84,6 +85,32 @@ public class ChatRestController {
 
 		return ResponseEntity.ok(chatRoomDTOs);
 	}
+	
+    @GetMapping("/rooms/{productId}")
+    public ResponseEntity<List<ChatRoomWithLastMessageDTO>> getCertainProductChatRoom(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable("productId") Long productId) {
+        
+        String token = authorizationHeader.replace("Bearer ", "");
+
+        if (!jwtTokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<ChatRoom> chatRooms = chatService.getChatRoomsByProductId(productId);
+        if (chatRooms.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<ChatRoomWithLastMessageDTO> chatRoomDTOs = chatRooms.stream()
+                .map((ChatRoom chatRoom) -> {
+                    ChatMessage lastMessage = chatService.getLastMessageForChatRoom(chatRoom);
+                    return ChatRoomWithLastMessageDTO.fromEntity(chatRoom, lastMessage);
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(chatRoomDTOs);
+    }
 
 	@GetMapping("rooms/{roomId}/messages")
 	public ResponseEntity<List<ChatMessageDTO>> getMessagesForRoom(@PathVariable("roomId") Long roomId,

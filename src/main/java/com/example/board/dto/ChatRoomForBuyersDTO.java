@@ -2,14 +2,14 @@ package com.example.board.dto;
 
 import com.example.board.model.chat.ChatMessage;
 import com.example.board.model.chat.ChatRoom;
+
 import lombok.Data;
 
 @Data
-public class ChatRoomWithLastMessageDTO {
+public class ChatRoomForBuyersDTO {
     private Long id;
     private String name;
     private String lastMessage;
-    private String imageUrl;
     private String timestamp;
     private String sender;
     
