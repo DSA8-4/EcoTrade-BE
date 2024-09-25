@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.example.board.model.ecoProduct.EcoProduct;
 import com.example.board.model.member.Member;
-import com.example.board.model.member.ProfileImage;
+
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

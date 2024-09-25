@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.example.board.model.member.Area;
 import com.example.board.model.member.Member;
-import com.example.board.model.member.ProfileImage;
 import com.example.board.model.product.Category;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
@@ -52,8 +51,6 @@ public class MacroUtil {
 			member.setEco_point(0L); // 초기 포인트 설정
 			member.setArea(Area.values()[random.nextInt(Area.values().length)]); // 랜덤 지역 설정
 
-
-
 			memberRepository.save(member);
 		}
 
@@ -76,7 +73,7 @@ public class MacroUtil {
 				image.setProduct(product); // product 설정
 				images.add(image);
 			}
-			 product.setProductImages(images); // 이미지 리스트에 추가
+			product.setProductImages(images); // 이미지 리스트에 추가
 
 			productRepository.save(product);
 		}
@@ -92,26 +89,23 @@ public class MacroUtil {
 
 		return twoYearsAgo.plusSeconds(randomSeconds);
 	}
-	
 
-    // admin 계정 생성 메서드
-    public void registerAdmin() {
-        Member admin = new Member();
-        admin.setMember_id("admin");
-        admin.setName("admin");
-        admin.setEmail("admin@example.com");
-        admin.setPassword(PasswordUtils.hashPassword("admin")); // 비밀번호 해싱
-        admin.setEco_point(10000L); // 초기 포인트를 임의로 설정, 필요에 따라 조정 가능
-        admin.setArea(Area.SEOUL); // 지역을 지정, 필요에 따라 변경 가능
+	// admin 계정 생성 메서드
+	public void registerAdmin() {
+		Member admin = new Member();
+		admin.setMember_id("admin");
+		admin.setName("admin");
+		admin.setEmail("admin@example.com");
+		admin.setPassword(PasswordUtils.hashPassword("admin")); // 비밀번호 해싱
+		admin.setEco_point(10000L); // 초기 포인트를 임의로 설정, 필요에 따라 조정 가능
+		admin.setArea(Area.SEOUL); // 지역을 지정, 필요에 따라 변경 가능
 
-        // 프로필 이미지 설정 (필요한 경우)
-        ProfileImage profileImage = new ProfileImage();
-        profileImage.setUrl("https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2Ffeature-image---undo-git-stash.webp?alt=media&token=759c3c7b-c8c9-4cc4-8417-6ee98eddef7a"); // 임의의 프로필 이미지 URL
-        profileImage.setMember(admin);
-        admin.setProfileImage(profileImage);
+		// 프로필 이미지 설정
+		admin.setProfileImageUrl(
+				"https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2Fcompanyimage01.jpg?alt=media&token=20f1016a-665c-418b-814c-9161e4c861f6");
 
-        memberRepository.save(admin);
-        System.out.println("Admin account created successfully!");
-    }
+		memberRepository.save(admin);
+		System.out.println("Admin account created successfully!");
+	}
 
 }
