@@ -75,14 +75,32 @@ public class ProductController {
 	public ResponseEntity<String> deleteProduct(@RequestHeader("Authorization") String authorizationHeader,
 			@PathVariable("id") Long id) {
 		try {
+			// Authorization 헤더에서 Bearer 토큰을 추출
 			String token = authorizationHeader.replace("Bearer ", "");
+
+			// 토큰이 유효한지 확인
 			if (!jwtTokenProvider.validateToken(token)) {
 				log.info("invalid token");
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
 			}
+
+			// 토큰에서 사용자 ID를 추출 (토큰에 사용자 정보를 포함하고 있다고 가정)
+			String userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+
+			// 삭제하려는 제품의 정보를 가져옴
+			Product product = productService.findProduct(id);
+
+			// 제품의 소유자가 토큰의 사용자와 일치하는지 확인
+			if (!product.getMember().getMember_id().equals(userIdFromToken)) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN)
+						.body("You are not authorized to delete this product.");
+			}
+
+			// 제품 삭제 수행
 			productService.deleteProduct(id);
 			return ResponseEntity.ok("Product deleted successfully.");
 		} catch (Exception e) {
+			log.error("Error deleting product: ", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting product.");
 		}
 	}
@@ -137,49 +155,67 @@ public class ProductController {
 	}
 
 	@PutMapping("/update/{productId}")
-	public ResponseEntity<Void> updateProduct(@PathVariable("productId") Long productId,
-			@RequestBody ProductWriteForm productWriteForm) {
-		log.info("Updating product: {}", productWriteForm);
-		try {
-			// 기존 상품 불러오기
-			Optional<Product> existingProductOpt = productService.findById(productId);
-			if (!existingProductOpt.isPresent()) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-			}
+	public ResponseEntity<Void> updateProduct(@RequestHeader("Authorization") String authorizationHeader,
+	                                          @PathVariable("productId") Long productId,
+	                                          @RequestBody ProductWriteForm productWriteForm) {
+	    log.info("Updating product: {}", productWriteForm);
+	    try {
+	        // Authorization 헤더에서 Bearer 토큰을 추출
+	        String token = authorizationHeader.replace("Bearer ", "");
+	        
+	        // 토큰이 유효한지 확인
+	        if (!jwtTokenProvider.validateToken(token)) {
+	            log.info("invalid token");
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+	        }
+	        
+	        // 토큰에서 사용자 ID를 추출 (토큰에 사용자 정보를 포함하고 있다고 가정)
+	        String userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+	        
+	        // 기존 상품 불러오기
+	        Optional<Product> existingProductOpt = productService.findById(productId);
+	        if (!existingProductOpt.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	        }
 
-			Product existingProduct = existingProductOpt.get();
+	        Product existingProduct = existingProductOpt.get();
 
-			// 상품 정보 업데이트
-			existingProduct.setTitle(productWriteForm.getTitle());
-			existingProduct.setContents(productWriteForm.getContents());
-			existingProduct.setPrice(productWriteForm.getPrice());
-			existingProduct.setCategory(productWriteForm.getCategory());
+	        // 상품 소유자가 토큰의 사용자와 일치하는지 확인
+	        if (!existingProduct.getMember().getMember_id().equals(userIdFromToken)) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+	        }
 
-			if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
+	        // 상품 정보 업데이트
+	        existingProduct.setTitle(productWriteForm.getTitle());
+	        existingProduct.setContents(productWriteForm.getContents());
+	        existingProduct.setPrice(productWriteForm.getPrice());
+	        existingProduct.setCategory(productWriteForm.getCategory());
 
-				// 1. 기존 이미지 삭제
-				existingProduct.getProductImages().clear();
+	        if (productWriteForm.getProductImages() != null && !productWriteForm.getProductImages().isEmpty()) {
+	            // 1. 기존 이미지 삭제
+	            existingProduct.getProductImages().clear();
 
-				// 2. 새로운 이미지를 추가
-				List<Image> images = productWriteForm.getProductImages().stream()
-						.map(url -> new Image(url, existingProduct)).collect(Collectors.toList());
+	            // 2. 새로운 이미지를 추가
+	            List<Image> images = productWriteForm.getProductImages().stream()
+	                    .map(url -> new Image(url, existingProduct)).collect(Collectors.toList());
 
-				// 새로운 이미지 저장
-				productService.saveImages(images);
+	            // 새로운 이미지 저장
+	            productService.saveImages(images);
 
-				// 기존 제품의 이미지 리스트에 새로운 이미지 추가
-				existingProduct.getProductImages().addAll(images);
-			}
+	            // 기존 제품의 이미지 리스트에 새로운 이미지 추가
+	            existingProduct.getProductImages().addAll(images);
+	        }
 
-			// 업데이트된 상품 정보 저장 (반환값 없이 저장)
-			productService.save(existingProduct);
+	        // 업데이트된 상품 정보 저장
+	        productService.save(existingProduct);
 
-			return ResponseEntity.ok().build();
-		} catch (Exception e) {
-			log.error("Error occurred while updating product", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
+	        return ResponseEntity.ok().build();
+	    } catch (Exception e) {
+	        log.error("Error occurred while updating product", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
 	}
+
 
 	@PutMapping("/updateStatus/{productId}")
 	public ResponseEntity<String> updateProductStatus(@PathVariable("productId") Long productId,
