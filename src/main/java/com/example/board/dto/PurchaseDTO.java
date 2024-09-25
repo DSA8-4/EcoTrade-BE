@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import com.example.board.model.chat.ChatRoom;
 import com.example.board.model.member.Member;
-import com.example.board.model.member.ProfileImage;
 import com.example.board.model.product.Purchase;
 
 import lombok.Data;
@@ -33,14 +32,9 @@ public class PurchaseDTO {
 
 		Member seller = purchase.getProduct().getMember(); // Product 객체에서 판매자 정보(Member)를 가져옴
 		dto.setSellerName(seller.getName()); // 판매자의 닉네임 설정
-		
-		// 프로필 이미지 설정 (ProfileImage 객체에서 경로 추출)
-		ProfileImage profileImage = seller.getProfileImage();
-		if (profileImage != null) {
-			dto.setSellerProfileImage(profileImage.getUrl()); // 이미지 URL 설정
-		} else {
-			dto.setSellerProfileImage(null); // 프로필 이미지가 없을 경우 null 처리
-		}
+
+		dto.setSellerProfileImage(seller.getProfileImageUrl());
+
 		return dto;
 	}
 }

@@ -20,10 +20,8 @@ import com.example.board.dto.SalesDTO;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
-import com.example.board.model.member.ProfileImage;
 import com.example.board.model.member.ProfileImageRequest;
 import com.example.board.repository.MemberRepository;
-import com.example.board.repository.ProfileImageRepository;
 import com.example.board.service.MemberService;
 import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
@@ -47,7 +45,6 @@ public class MemberController {
 	}
 
 	@Autowired
-	private ProfileImageRepository profileImageRepository;
 	private final MemberRepository memberRepository;
 
 	public Optional<Member> findById(String memberId) {
@@ -130,33 +127,33 @@ public class MemberController {
 		}
 	}
 
-	@GetMapping("/profile/images/{memberId}")
-	public ResponseEntity<Map<String, String>> getProfileImage(@PathVariable("memberId") String memberId) {
-		try {
-			// memberId로 Member 객체 조회
-			Member member = memberRepository.findById(memberId)
-					.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-
-			// Member로 프로필 이미지 정보를 데이터베이스에서 조회
-			ProfileImage profileImage = profileImageRepository.findByMember(member);
-
-			if (profileImage == null) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "프로필 이미지가 존재하지 않습니다."));
-			}
-
-			// 이미지 URL을 Map으로 반환
-			Map<String, String> response = new HashMap<>();
-			response.put("message", "프로필 이미지 조회 성공");
-			response.put("imageUrl", profileImage.getUrl());
-
-			return ResponseEntity.ok(response);
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
-		} catch (Exception e) {
-			log.error("프로필 이미지 조회 실패", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "이미지 조회 중 오류 발생"));
-		}
-	}
+//	@GetMapping("/profile/images/{memberId}")
+//	public ResponseEntity<Map<String, String>> getProfileImage(@PathVariable("memberId") String memberId) {
+//		try {
+//			// memberId로 Member 객체 조회
+//			Member member = memberRepository.findById(memberId)
+//					.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+//
+//			// Member로 프로필 이미지 정보를 데이터베이스에서 조회
+//			String imageUrl = member.getProfileImageUrl(); // Assume this returns a String URL
+//
+//			if (imageUrl == null || imageUrl.isEmpty()) {
+//				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "프로필 이미지가 존재하지 않습니다."));
+//			}
+//
+//			// 이미지 URL을 Map으로 반환
+//			Map<String, String> response = new HashMap<>();
+//			response.put("message", "프로필 이미지 조회 성공");
+//			response.put("imageUrl", imageUrl);
+//
+//			return ResponseEntity.ok(response);
+//		} catch (IllegalArgumentException e) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+//		} catch (Exception e) {
+//			log.error("프로필 이미지 조회 실패", e);
+//			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "이미지 조회 중 오류 발생"));
+//		}
+//	}
 
 	// 마이페이지
 	@GetMapping("/mypage")
@@ -232,8 +229,9 @@ public class MemberController {
 			existingMember.setEmail(updateRequest.getEmail());
 
 			// 프로필 이미지 업데이트 (단일 이미지)
-			if (updateRequest.getProfileImage() != null) {
-				existingMember.getProfileImage().setUrl(updateRequest.getProfileImage().getUrl());
+			if (updateRequest.getProfileImageUrl() != null) {
+				// 직접 URL 업데이트 로직을 수행
+				existingMember.setProfileImageUrl(member_id);
 			}
 
 			existingMember.setArea(updateRequest.getArea());
