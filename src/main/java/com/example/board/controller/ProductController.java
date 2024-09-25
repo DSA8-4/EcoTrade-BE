@@ -102,20 +102,21 @@ public class ProductController {
 
 	@GetMapping("/detail/{productId}")
 	public ResponseEntity<ProductDTO> detail(@PathVariable("productId") Long productId) {
-		Optional<Product> productOpt = productService.findById(productId);
+	    Optional<Product> productOpt = productService.findById(productId);
 
-		if (productOpt.isPresent()) {
-			Product product = productOpt.get();
-			product.addHit(); // 조회수 증가
-			productService.save(product); // 변경 사항 저장
+	    if (productOpt.isPresent()) {
+	        Product product = productOpt.get();
+	        product.addHit(); // Increase view count
+	        productService.save(product); // Save changes
+	        
+	        ProductDTO productDTO = ProductDTO.fromEntity(product); // Populate DTO
 
-			ProductDTO productDTO = ProductDTO.fromEntity(product);
-
-			return ResponseEntity.ok(productDTO);
-		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		}
+	        return ResponseEntity.ok(productDTO);
+	    } else {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	    }
 	}
+
 
 	@PostMapping("/productLike/{productId}")
 	public ResponseEntity<Boolean> likeProduct(@PathVariable("productId") Long productId,

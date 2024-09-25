@@ -1,8 +1,11 @@
 package com.example.board.dto;
 
+import com.example.board.model.member.Member;
 import com.example.board.model.product.Category;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
+import com.example.board.model.product.ProductLike;
+
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -21,6 +24,7 @@ public class ProductDTO {
     private List<String> imageUrls;
     private Category category;
     private String seller;
+    private List<String> likedMembers;
     public static ProductDTO fromEntity(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setProductId(product.getId());
@@ -35,6 +39,10 @@ public class ProductDTO {
             .collect(Collectors.toList()));
         dto.setCategory(product.getCategory());
         dto.setSeller(product.getMember().getName());
+        List<String> likedMembers = product.getProductLikes().stream()
+                .map(productLike -> productLike.getMember().getMember_id())
+                .collect(Collectors.toList());
+            dto.setLikedMembers(likedMembers);
         return dto;
     }
 }

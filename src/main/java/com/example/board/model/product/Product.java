@@ -51,6 +51,14 @@ public class Product {
 	public Product() {
 		this.status = ProductStatus.TRADING; // 기본 상태를 '거래중'으로 설정
 	}
+	
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductLike> productLikes; // This assumes you have a ProductLike entity
+
+    // Getter for productLikes
+    public List<ProductLike> getProductLikes() {
+        return productLikes;
+    }
 
 	// 조회수 증가 메서드
 	public void addHit() {
