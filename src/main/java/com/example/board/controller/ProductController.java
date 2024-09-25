@@ -73,37 +73,32 @@ public class ProductController {
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deleteProduct(@RequestHeader("Authorization") String authorizationHeader,
-			@PathVariable("id") Long id) {
-		try {
-			// Authorization 헤더에서 Bearer 토큰을 추출
-			String token = authorizationHeader.replace("Bearer ", "");
+	                                            @PathVariable("id") Long id) {
+	    try {
+	        // JwtTokenProvider를 통해 토큰을 추출하고 유효성을 검사
+	        String token = JwtTokenProvider.extractAndValidateToken(authorizationHeader, jwtTokenProvider);
 
-			// 토큰이 유효한지 확인
-			if (!jwtTokenProvider.validateToken(token)) {
-				log.info("invalid token");
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-			}
+	        // 토큰에서 사용자 ID를 추출
+	        String userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
 
-			// 토큰에서 사용자 ID를 추출 (토큰에 사용자 정보를 포함하고 있다고 가정)
-			String userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+	        // 삭제하려는 제품의 정보를 가져옴
+	        Product product = productService.findProduct(id);
 
-			// 삭제하려는 제품의 정보를 가져옴
-			Product product = productService.findProduct(id);
+	        // 제품의 소유자가 토큰의 사용자와 일치하는지 확인
+	        if (!product.getMember().getMember_id().equals(userIdFromToken)) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	                    .body("You are not authorized to delete this product.");
+	        }
 
-			// 제품의 소유자가 토큰의 사용자와 일치하는지 확인
-			if (!product.getMember().getMember_id().equals(userIdFromToken)) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN)
-						.body("You are not authorized to delete this product.");
-			}
-
-			// 제품 삭제 수행
-			productService.deleteProduct(id);
-			return ResponseEntity.ok("Product deleted successfully.");
-		} catch (Exception e) {
-			log.error("Error deleting product: ", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting product.");
-		}
+	        // 제품 삭제 수행
+	        productService.deleteProduct(id);
+	        return ResponseEntity.ok("Product deleted successfully.");
+	    } catch (Exception e) {
+	        log.error("Error deleting product: ", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting product.");
+	    }
 	}
+
 
 	@GetMapping("/detail/{productId}")
 	public ResponseEntity<ProductDTO> detail(@PathVariable("productId") Long productId) {
@@ -160,16 +155,10 @@ public class ProductController {
 	                                          @RequestBody ProductWriteForm productWriteForm) {
 	    log.info("Updating product: {}", productWriteForm);
 	    try {
-	        // Authorization 헤더에서 Bearer 토큰을 추출
-	        String token = authorizationHeader.replace("Bearer ", "");
+	        // JwtTokenProvider를 통해 토큰을 추출하고 유효성을 검사
+	        String token = JwtTokenProvider.extractAndValidateToken(authorizationHeader, jwtTokenProvider);
 	        
-	        // 토큰이 유효한지 확인
-	        if (!jwtTokenProvider.validateToken(token)) {
-	            log.info("invalid token");
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-	        }
-	        
-	        // 토큰에서 사용자 ID를 추출 (토큰에 사용자 정보를 포함하고 있다고 가정)
+	        // 토큰에서 사용자 ID를 추출
 	        String userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
 	        
 	        // 기존 상품 불러오기
@@ -215,6 +204,7 @@ public class ProductController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	    }
 	}
+
 
 
 	@PutMapping("/updateStatus/{productId}")
