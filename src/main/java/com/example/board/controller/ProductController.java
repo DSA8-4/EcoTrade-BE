@@ -64,21 +64,24 @@ public class ProductController {
 	}
 
 	@GetMapping("/list")
-	public ResponseEntity<Page<ProductDTO>> list(
+	public ResponseEntity<List<ProductDTO>> list(
 	        @RequestParam(value = "searchText", required = false) String searchText,
 	        @RequestParam(value = "page", defaultValue = "0") int page,  
 	        @RequestParam(value = "size", defaultValue = "12") int size) { 
 
 	    Pageable pageable = PageRequest.of(page, size);
 
-	    Page<Product> productPage = (searchText != null && !searchText.isEmpty()) 
-	            ? productService.findSearch(searchText, pageable)  
-	            : productService.findAll(pageable);               
+	    List<Product> productList = (searchText != null && !searchText.isEmpty()) 
+	            ? productService.findSearch(searchText, pageable).getContent()  // Page에서 내용만 가져옴
+	            : productService.findAll(pageable).getContent();               // Page에서 내용만 가져옴
 
-	    Page<ProductDTO> productDTOs = productPage.map(ProductDTO::fromEntity);
+	    List<ProductDTO> productDTOs = productList.stream()
+	            .map(ProductDTO::fromEntity)
+	            .collect(Collectors.toList());
 
 	    return ResponseEntity.ok(productDTOs);  
 	}
+
 
 
 	@DeleteMapping("/delete/{id}")
