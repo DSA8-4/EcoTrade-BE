@@ -8,6 +8,10 @@ import com.example.board.service.ProductService;
 import com.example.board.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,16 +64,22 @@ public class ProductController {
 	}
 
 	@GetMapping("/list")
-	public ResponseEntity<List<ProductDTO>> list(
-			@RequestParam(value = "searchText", required = false) String searchText) {
-		List<Product> productList = (searchText != null && !searchText.isEmpty())
-				? productService.findSearch(searchText)
-				: productService.findAll();
+	public ResponseEntity<Page<ProductDTO>> list(
+	        @RequestParam(value = "searchText", required = false) String searchText,
+	        @RequestParam(value = "page", defaultValue = "0") int page,  
+	        @RequestParam(value = "size", defaultValue = "12") int size) { 
 
-		List<ProductDTO> productDTOs = productList.stream().map(ProductDTO::fromEntity).collect(Collectors.toList());
+	    Pageable pageable = PageRequest.of(page, size);
 
-		return ResponseEntity.ok(productDTOs);
+	    Page<Product> productPage = (searchText != null && !searchText.isEmpty()) 
+	            ? productService.findSearch(searchText, pageable)  
+	            : productService.findAll(pageable);               
+
+	    Page<ProductDTO> productDTOs = productPage.map(ProductDTO::fromEntity);
+
+	    return ResponseEntity.ok(productDTOs);  
 	}
+
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deleteProduct(@RequestHeader("Authorization") String authorizationHeader,

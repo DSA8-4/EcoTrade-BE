@@ -13,6 +13,9 @@ import com.example.board.repository.PurchaseRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -167,4 +170,13 @@ public class ProductService {
         productRepository.save(product); // 업데이트된 Product 저장
     }
     
+ // For paginated search
+    public Page<Product> findSearch(String searchText, Pageable pageable) {
+        return productRepository.findByTitleContaining(searchText, pageable);
+    }
+
+    // For paginated list of all products
+    public Page<Product> findAll(Pageable pageable) {
+        return productRepository.findAll(pageable);
+    }
 }
