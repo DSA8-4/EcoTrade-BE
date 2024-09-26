@@ -57,6 +57,11 @@ public class ChatService {
                 .map(ChatMessageDTO::fromEntity)
                 .collect(Collectors.toList());
     }
+    
+    public List<ChatRoom> getChatRoomsByProductId(Long productId) {
+        return chatRoomRepository.findByProduct_Id(productId);
+    }
+
 
     public ChatRoom getRoomById(Long id) {
         return chatRoomRepository.findById(id).orElse(null);

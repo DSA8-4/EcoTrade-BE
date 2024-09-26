@@ -13,6 +13,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 	List<ChatRoom> findByMember(Member member);
 	List<ChatRoom> findByProduct_Member(Member productOwner);
 	List<ChatRoom> findAllByProduct(Product product);
+	List<ChatRoom> findByProduct_Id(Long productId);
 	ChatRoom findByProductAndMember(Product product, Member member);
 	@Query("SELECT cr FROM ChatRoom cr WHERE cr.product.id = :productId AND cr.member.id = :memberId")
 	ChatRoom findByProductIdAndMemberId(@Param("productId") Long productId, @Param("memberId") Long memberId);

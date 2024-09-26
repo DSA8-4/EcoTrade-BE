@@ -11,14 +11,23 @@ public class ChatRoomWithLastMessageDTO {
     private String lastMessage;
     private String imageUrl;
     private String timestamp;
+    private String sender;
+    
     public static ChatRoomWithLastMessageDTO fromEntity(ChatRoom chatRoom, ChatMessage lastMessage) {
         ChatRoomWithLastMessageDTO dto = new ChatRoomWithLastMessageDTO();
         dto.setId(chatRoom.getId());
         dto.setName(chatRoom.getName());
-        dto.setLastMessage(lastMessage.getContent());
-        dto.setImageUrl(chatRoom.getProduct().getProductImages().get(0).getUrl());
-        dto.setTimestamp(lastMessage.getTimestamp());
 
+        if (lastMessage != null) {
+            dto.setLastMessage(lastMessage.getContent());
+            dto.setTimestamp(lastMessage.getTimestamp());
+            dto.setSender(lastMessage.getSender());
+        } else {
+            dto.setLastMessage("No messages yet");
+            dto.setTimestamp(null);
+        }
+        
+        dto.setImageUrl(chatRoom.getProduct().getProductImages().get(0).getUrl());
         return dto;
     }
 }
