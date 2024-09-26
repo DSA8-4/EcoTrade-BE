@@ -76,6 +76,8 @@ public class MemberController {
 				response.put("token", token);
 				response.put("name", member.getName());
 				response.put("member_id", member.getMember_id()); // member_id를 추가로 반환
+				response.put("profileImage", member.getProfileImageUrl());
+				
 
 				return ResponseEntity.ok(response);
 			} else {
