@@ -1,26 +1,19 @@
 package com.example.board.controller;
 
 import com.example.board.dto.EcoProductDTO;
-import com.example.board.dto.ProductDTO;
 import com.example.board.model.ecoProduct.EcoProduct;
 import com.example.board.model.ecoProduct.EcoProductImage;
+import com.example.board.model.ecoProduct.EcoProductWriteForm;
 import com.example.board.model.member.Member;
-import com.example.board.model.product.Image;
-import com.example.board.model.product.Product;
-import com.example.board.model.product.ProductStatus;
-import com.example.board.model.product.ProductWriteForm;
 import com.example.board.model.product.Purchase;
 import com.example.board.service.EcoProductService;
 import com.example.board.service.MemberService;
-import com.example.board.service.ProductService;
 import com.example.board.util.JwtTokenProvider;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,24 +31,17 @@ public class EcoProductController {
 
 	// 에코포인트로만 구매 가능한 상품 등록
 	@PostMapping("/register")
-	public ResponseEntity<String> registerEcoPointOnlyProduct(@RequestParam(name = "title") String title,
-			@RequestParam(name = "contents") String contents, @RequestParam(name = "ecoPoints") Long ecoPoints,
-			@RequestParam(name = "imageUrls", required = false) List<String> imageUrls) {
+	public ResponseEntity<String> registerEcoPointOnlyProduct(
+			@RequestBody EcoProductWriteForm ecoProductWriteForm) {
 		try {
-			log.info("Registering new eco-point only product...");
-			// 상품 등록
-			EcoProduct ecoProduct = new EcoProduct();
-			ecoProduct.setTitle(title);
-			ecoProduct.setContent(contents);
-			ecoProduct.setPrice(ecoPoints); // 에코포인트로만 가격 설정
-
-			if (imageUrls != null && !imageUrls.isEmpty()) {
-				List<EcoProductImage> ecoProductImages = imageUrls.stream()
+			EcoProduct ecoProduct = EcoProductWriteForm.toEcoProduct(ecoProductWriteForm);
+			List<String> ecoProductWriteFormImages = ecoProductWriteForm.getEcoProductImages();
+			if (ecoProductWriteFormImages != null && !ecoProductWriteFormImages.isEmpty()) {
+				List<EcoProductImage> ecoProductImages = ecoProductWriteFormImages.stream()
 						.map(url -> new EcoProductImage(url, ecoProduct)).collect(Collectors.toList());
 				ecoProduct.setEcoProductImages(ecoProductImages);
 			}
 
-			// 상품 저장
 			ecoProductService.save(ecoProduct);
 
 			return ResponseEntity.ok("Eco-point only product registered successfully.");
