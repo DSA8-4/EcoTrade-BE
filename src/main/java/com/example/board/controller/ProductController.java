@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -243,68 +244,88 @@ public class ProductController {
 	// 상품 구매
 	@PostMapping("/purchase/{productId}")
 	public ResponseEntity<String> purchaseProduct(@PathVariable("productId") Long productId,
-			@RequestHeader("Authorization") String authorizationHeader) {
-		try {
-			log.info("Extracting token...");
-			// Extract the JWT token and validate it
-			String token = authorizationHeader.replace("Bearer ", "");
-			if (!jwtTokenProvider.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
-			}
+	        @RequestHeader("Authorization") String authorizationHeader,
+	        @RequestBody Map<String, String> requestBody) {  // 요청 본문에서 JSON 객체를 받습니다
+	    try {
+	        log.info("Extracting token...");
+	        // Extract the JWT token and validate it
+	        String token = authorizationHeader.replace("Bearer ", "");
+	        if (!jwtTokenProvider.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+	        }
 
-			log.info("Extracting member ID from token...");
-			// Get the memberId from the token
-			String memberId = jwtTokenProvider.getUserIdFromToken(token);
+	        log.info("Extracting seller ID from token...");
+	        // Get the sellerId from the token
+	        String sellerId = jwtTokenProvider.getUserIdFromToken(token);
 
-			log.info("Finding product...");
-			// Find the product
-			Optional<Product> productOpt = productService.findById(productId);
-			if (!productOpt.isPresent()) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
-			}
+	        // Get buyerId from the request body
+	        String buyerId = requestBody.get("buyerId");
+	        if (buyerId == null || buyerId.isEmpty()) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Buyer ID is required.");
+	        }
 
-			Product product = productOpt.get();
+	        log.info("Finding product...");
+	        // Find the product
+	        Optional<Product> productOpt = productService.findById(productId);
+	        if (!productOpt.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+	        }
 
-			// Check if the product is already completed
-			if (product.getStatus() == ProductStatus.COMPLETED) {
-				return ResponseEntity.status(HttpStatus.CONFLICT).body("Product has already been sold.");
-			}
+	        Product product = productOpt.get();
 
-			log.info("Creating new purchase...");
-			// Create a new purchase
-			Purchase purchase = new Purchase();
-			Member buyer = memberService.findMemberById(memberId); // Get the buyer (member)
-			purchase.setBuyer(buyer);
-			purchase.setProduct(product);
-			purchase.setPurchaseDate(LocalDateTime.now());
+	        // Check if the product is already completed
+	        if (product.getStatus() == ProductStatus.COMPLETED) {
+	            return ResponseEntity.status(HttpStatus.CONFLICT).body("Product has already been sold.");
+	        }
 
-			// Save the purchase
-			productService.savePurchase(purchase);
+	        log.info("Finding buyer...");
+	        // Get the buyer (member)
+	        Member buyer = memberService.findMemberById(buyerId);
+	        if (buyer == null) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Buyer not found.");
+	        }
 
-			log.info("Updating product status to COMPLETED...");
-			// Update the product status to "Completed"
-			product.setStatus(ProductStatus.COMPLETED);
-			productService.save(product);
+	        // Check if the buyer is trying to buy their own product (buyer and seller should be different)
+	        Member seller = product.getMember(); // Product 작성자 (판매자)
+	        if (seller.getMember_id().equals(buyerId)) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You cannot purchase your own product.");
+	        }
 
-			log.info("Updating member's eco points...");
-			// 적립 포인트 계산 및 저장
-			long ecoPointBuyer = Math.round(product.getPrice() * 0.01); // 구매자 포인트
-			long ecoPointSeller = Math.round(product.getPrice() * 0.005); // 판매자 포인트
+	        log.info("Creating new purchase...");
+	        // Create a new purchase
+	        Purchase purchase = new Purchase();
+	        purchase.setBuyer(buyer);
+	        purchase.setProduct(product);
+	        purchase.setPurchaseDate(LocalDateTime.now());
 
-			// 구매자 포인트 적립
-			buyer.setEco_point(buyer.getEco_point() + ecoPointBuyer);
-			memberService.saveMember(buyer);
+	        // Save the purchase
+	        productService.savePurchase(purchase);
 
-			// 판매자 포인트 적립 (상품 작성자가 판매자)
-			Member seller = product.getMember();
-			seller.setEco_point(seller.getEco_point() + ecoPointSeller);
-			memberService.saveMember(seller);
+	        log.info("Updating product status to COMPLETED...");
+	        // Update the product status to "Completed"
+	        product.setStatus(ProductStatus.COMPLETED);
+	        productService.save(product);
 
-			return ResponseEntity.ok("Product purchased successfully.");
-		} catch (Exception e) {
-			log.error("Error during purchase", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
-		}
+	        log.info("Updating member's eco points...");
+	        // 적립 포인트 계산 및 저장
+	        long ecoPointBuyer = Math.round(product.getPrice() * 0.01); // 구매자 포인트
+	        long ecoPointSeller = Math.round(product.getPrice() * 0.005); // 판매자 포인트
+
+	        // 구매자 포인트 적립
+	        buyer.setEco_point(buyer.getEco_point() + ecoPointBuyer);
+	        memberService.saveMember(buyer);
+
+	        // 판매자 포인트 적립 (상품 작성자가 판매자)
+	        seller.setEco_point(seller.getEco_point() + ecoPointSeller);
+	        memberService.saveMember(seller);
+
+	        return ResponseEntity.ok("Product purchased successfully.");
+	    } catch (Exception e) {
+	        log.error("Error during purchase", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
+	    }
 	}
+
+
 
 }
