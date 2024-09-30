@@ -18,5 +18,6 @@ public interface MemberRepository extends JpaRepository<Member, String> {
 
 	// name 중복 여부 확인
 	boolean existsByName(String name);
-
+	
+	Optional<Member> findByName(String name);
 }

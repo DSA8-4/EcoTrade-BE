@@ -18,14 +18,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.board.dto.EcoProductPurchaseDTO;
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.dto.PurchaseDTO;
 import com.example.board.dto.SalesDTO;
+import com.example.board.model.ecoProduct.EcoProductPurchase;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
 import com.example.board.model.product.Product;
 import com.example.board.model.product.Purchase;
+import com.example.board.repository.EcoProductPurchaseRepository;
 import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProductRepository;
 import com.example.board.repository.PurchaseRepository;
@@ -41,6 +44,7 @@ public class MemberService {
 	private final PasswordEncoder passwordEncoder;
 	private final ProductRepository productRepository;
 	private final PurchaseRepository purchaseRepository;
+	private final EcoProductPurchaseRepository ecoPurchaseRepository;
 
 	@Value("${profile.images.upload-dir:/path/to/profile-images/}")
 	private String uploadDir; // @Value 어노테이션을 사용하여 프로퍼티 값 주입
@@ -270,5 +274,29 @@ public class MemberService {
 
 		}).collect(Collectors.toList());
 	}
+	
+	@Transactional
+	public List<EcoProductPurchaseDTO> getEcoPurchaseHistory(String memberId) {
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
+		List<EcoProductPurchase> purchases = ecoPurchaseRepository.findByBuyerId(memberId);
+		return purchases.stream().map(ecoPurchase -> {
+
+			EcoProductPurchaseDTO dto = new EcoProductPurchaseDTO();
+			dto.setId(ecoPurchase.getId());
+			dto.setId(ecoPurchase.getEcoProduct().getEcoProductId());
+			dto.setProductTitle(ecoPurchase.getEcoProductTitle());
+			dto.setPurchaseDate(ecoPurchase.getPurchaseDate());
+			return dto;
+
+		}).collect(Collectors.toList());
+	}
+	
+	public Member findByName(String name) {
+	    return memberRepository.findByName(name)
+	            .orElseThrow(() -> new IllegalArgumentException("Member not found with name: " + name));
+	}
+
+	
 }
