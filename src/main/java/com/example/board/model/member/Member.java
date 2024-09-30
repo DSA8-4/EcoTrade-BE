@@ -1,15 +1,11 @@
 package com.example.board.model.member;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -42,4 +38,5 @@ public class Member {
 	//지역
 	@Enumerated(EnumType.STRING)
 	private Area area;
+	
 }

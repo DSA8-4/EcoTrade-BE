@@ -5,6 +5,8 @@ import com.example.board.model.ecoProduct.EcoProduct;
 import com.example.board.model.ecoProduct.EcoProductImage;
 import com.example.board.model.ecoProduct.EcoProductWriteForm;
 import com.example.board.model.member.Member;
+import com.example.board.model.product.Image;
+import com.example.board.model.product.Product;
 import com.example.board.model.product.Purchase;
 import com.example.board.service.EcoProductService;
 import com.example.board.service.MemberService;
@@ -53,10 +55,7 @@ public class EcoProductController {
 
 	@PutMapping("/update/{id}")
 	public ResponseEntity<String> updateEcoPointOnlyProduct(@PathVariable("id") Long id,
-			@RequestParam(name = "title", required = false) String title,
-			@RequestParam(name = "contents", required = false) String contents,
-			@RequestParam(name = "ecoPoints", required = false) Long ecoPoints,
-			@RequestParam(name = "imageUrls", required = false) List<String> imageUrls) {
+			@RequestBody EcoProductWriteForm ecoProductWriteForm) {
 
 		log.info("Updating eco-point only product with ID: {}", id);
 
@@ -69,33 +68,25 @@ public class EcoProductController {
 
 			EcoProduct ecoProduct = optionalEcoProduct.get();
 
-			// Update title, content, and ecoPoints if provided
-			if (title != null) {
-				ecoProduct.setTitle(title);
-			}
-			if (contents != null) {
-				ecoProduct.setContent(contents);
-			}
-			if (ecoPoints != null) {
-				if (ecoPoints < 0) {
-					return ResponseEntity.badRequest().body("Eco points cannot be negative.");
-				}
-				ecoProduct.setPrice(ecoPoints); // Update ecoPoints
-			}
+			ecoProduct.setTitle(ecoProductWriteForm.getTitle());
+			ecoProduct.setContent(ecoProductWriteForm.getContent());
+			ecoProduct.setPrice(ecoProductWriteForm.getEcoPoints());
 
 			// Handle image updates
-			if (imageUrls != null && !imageUrls.isEmpty()) {
-				// Remove old images
+			if (ecoProductWriteForm.getEcoProductImages() != null && ecoProductWriteForm.getEcoProductImages().isEmpty()) {
+	            // 1. 기존 이미지 삭제
 				ecoProduct.getEcoProductImages().clear();
 
-				// Add new images
-				for (String url : imageUrls) {
-					EcoProductImage ecoProductImage = new EcoProductImage();
-					ecoProductImage.setUrl(url); // Assume EcoProductImage has a setUrl method
-					ecoProductImage.setEcoProduct(ecoProduct); // Set reference back to EcoProduct
-					ecoProduct.getEcoProductImages().add(ecoProductImage);
-				}
-			}
+	            // 2. 새로운 이미지를 추가
+	            List<EcoProductImage> images = ecoProductWriteForm.getEcoProductImages().stream()
+	                    .map(url -> new EcoProductImage(url, ecoProduct)).collect(Collectors.toList());
+
+	            // 새로운 이미지 저장
+	            ecoProductService.saveImages(images);
+
+	            // 기존 제품의 이미지 리스트에 새로운 이미지 추가
+	            ecoProduct.getEcoProductImages().addAll(images);
+	        }
 
 			// Save updated product
 			ecoProductService.save(ecoProduct);
@@ -106,19 +97,6 @@ public class EcoProductController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body("Error during product update: " + e.getMessage());
 		}
-	}
-
-	@GetMapping("/list")
-	public ResponseEntity<List<EcoProductDTO>> list(
-			@RequestParam(value = "searchText", required = false) String searchText) {
-		List<EcoProduct> ecoProductList = (searchText != null && !searchText.isEmpty())
-				? ecoProductService.findSearch(searchText)
-				: ecoProductService.findAll();
-
-		List<EcoProductDTO> ecoProductDTOs = ecoProductList.stream().map(EcoProductDTO::fromEntity)
-				.collect(Collectors.toList());
-
-		return ResponseEntity.ok(ecoProductDTOs);
 	}
 
 	@GetMapping("/detail/{id}")
