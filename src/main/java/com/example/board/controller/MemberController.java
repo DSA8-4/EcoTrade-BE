@@ -5,23 +5,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.board.dto.EcoProductDTO;
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.dto.PasswordUpdateRequest;
 import com.example.board.dto.PurchaseDTO;
 import com.example.board.dto.SalesDTO;
+import com.example.board.model.ecoProduct.EcoProduct;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
 import com.example.board.model.member.ProfileImageRequest;
 import com.example.board.repository.MemberRepository;
+import com.example.board.service.EcoProductService;
 import com.example.board.service.MemberService;
 import com.example.board.util.JwtTokenProvider;
 import com.example.board.util.PasswordUtils;
@@ -34,14 +40,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/members")
 public class MemberController {
 	private final MemberService memberService;
+	private final EcoProductService ecoProductService;
 	private final JwtTokenProvider jwtTokenProvider;
-
+  
 	public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider,
-			MemberRepository memberRepository) {
+			MemberRepository memberRepository, EcoProductService ecoProductService) {
 		this.memberService = memberService;
 		this.jwtTokenProvider = jwtTokenProvider;
 		this.memberRepository = memberRepository;
-
+		this.ecoProductService = ecoProductService;
 	}
 
 	@Autowired
@@ -322,5 +329,25 @@ public class MemberController {
 		// 클라이언트가 토큰을 폐기하거나, 서버에서 토큰을 블랙리스트에 추가하는 등의 방법을 사용할 수 있습니다.
 		return ResponseEntity.noContent().build();
 
+	}
+	
+	//에코구매내역
+	@GetMapping("/ecoPurchase")
+	public ResponseEntity<List<EcoProductDTO>> list(
+	        @RequestParam(value = "searchText", required = false) String searchText,
+	        @RequestParam(value = "page", defaultValue = "0") int page,  
+	        @RequestParam(value = "size", defaultValue = "12") int size) { 
+
+	    Pageable pageable = PageRequest.of(page, size);
+
+	    List<EcoProduct> ecoProductList = (searchText != null && !searchText.isEmpty()) 
+	            ? ecoProductService.findSearch(searchText, pageable).getContent()  // Page에서 내용만 가져옴
+	            : ecoProductService.findAll(pageable).getContent();               // Page에서 내용만 가져옴
+
+	    List<EcoProductDTO> ecoProductDTOs = ecoProductList.stream()
+	            .map(EcoProductDTO::fromEntity)
+	            .collect(Collectors.toList());
+
+	    return ResponseEntity.ok(ecoProductDTOs);  
 	}
 }

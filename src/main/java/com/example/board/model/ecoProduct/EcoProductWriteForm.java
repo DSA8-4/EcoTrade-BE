@@ -26,7 +26,7 @@ public class EcoProductWriteForm {
         ecoProduct.setTitle(ecoProductWriteForm.getTitle());
         ecoProduct.setContent(ecoProductWriteForm.getContent());
         ecoProduct.setPrice(ecoProductWriteForm.getEcoPoints());
-        ecoProduct.setEcoProductImages(ecoProduct.getEcoProductImages());
+//        ecoProduct.setEcoProductImages(ecoProduct.getEcoProductImages());
 
         return ecoProduct;
     }

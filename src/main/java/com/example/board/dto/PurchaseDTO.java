@@ -11,8 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Data
-@Getter
-@Setter
 public class PurchaseDTO {
 //	private String member_id;
 	private Long id;
