@@ -292,5 +292,11 @@ public class MemberService {
 
 		}).collect(Collectors.toList());
 	}
+	
+	public Member findByName(String name) {
+	    return memberRepository.findByName(name)
+	            .orElseThrow(() -> new IllegalArgumentException("Member not found with name: " + name));
+	}
 
+	
 }

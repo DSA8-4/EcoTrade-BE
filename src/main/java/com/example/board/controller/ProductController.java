@@ -258,10 +258,10 @@ public class ProductController {
 	        // Get the sellerId from the token
 	        String sellerId = jwtTokenProvider.getUserIdFromToken(token);
 
-	        // Get buyerId from the request body
-	        String buyerId = requestBody.get("buyerId");
-	        if (buyerId == null || buyerId.isEmpty()) {
-	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Buyer ID is required.");
+	        // Get buyer name from the request body
+	        String name = requestBody.get("name");
+	        if (name == null || name.isEmpty()) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Buyer name is required.");
 	        }
 
 	        log.info("Finding product...");
@@ -279,15 +279,15 @@ public class ProductController {
 	        }
 
 	        log.info("Finding buyer...");
-	        // Get the buyer (member)
-	        Member buyer = memberService.findMemberById(buyerId);
+	        // Get the buyer (member) by name
+	        Member buyer = memberService.findByName(name);
 	        if (buyer == null) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Buyer not found.");
 	        }
 
 	        // Check if the buyer is trying to buy their own product (buyer and seller should be different)
 	        Member seller = product.getMember(); // Product 작성자 (판매자)
-	        if (seller.getMember_id().equals(buyerId)) {
+	        if (seller.getMember_id().equals(buyer.getMember_id())) {
 	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You cannot purchase your own product.");
 	        }
 
@@ -325,6 +325,7 @@ public class ProductController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
 	    }
 	}
+
 
 
 
