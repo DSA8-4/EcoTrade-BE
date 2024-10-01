@@ -60,7 +60,7 @@ public class MacroUtil {
 			product.setTitle("랜덤상품 " + (i + 1));
 			product.setContents("여기에 상품 설명을 적어주세요 " + (i + 1));
 			product.setPrice(random.nextLong(1000, 100000)); // 가격 범위 설정
-			product.setCreated_time(getRandomPastDateTime()); // 랜덤 시간으로 설정
+			product.setCreatedTime(getRandomPastDateTime()); // 랜덤 시간으로 설정
 			product.setMember(memberRepository.findById("aaaa" + (random.nextInt(10) + 1)).orElse(null)); // 랜덤 회원 설정
 			product.setCategory(Category.values()[random.nextInt(Category.values().length)]); // 랜덤 카테고리 설정
 

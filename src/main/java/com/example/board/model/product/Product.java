@@ -32,7 +32,7 @@ public class Product {
 //    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<Like> likes = new ArrayList<>();
 	@Column(name = "created_time", nullable = false)
-	private LocalDateTime created_time; // 상품 작성일
+	private LocalDateTime createdTime; // 상품 작성일
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference

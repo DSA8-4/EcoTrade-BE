@@ -248,7 +248,7 @@ public class MemberService {
 	        salesDTO.setTitle(product.getTitle());                    // 제품 제목
 	        salesDTO.setPrice(product.getPrice());                    // 가격
 	        salesDTO.setContents(product.getContents());			//내용   
-	        salesDTO.setCreatedTime(product.getCreated_time());        // 생성 시간
+	        salesDTO.setCreatedTime(product.getCreatedTime());        // 생성 시간
 
 	        return salesDTO; // SalesDTO 반환
 	    }).collect(Collectors.toList());

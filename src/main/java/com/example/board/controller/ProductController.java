@@ -9,6 +9,7 @@ import com.example.board.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,15 +72,18 @@ public class ProductController {
 	        @RequestParam(value = "page", defaultValue = "0") int page,  
 	        @RequestParam(value = "size", defaultValue = "12") int size) { 
 
-	    Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdTime"));
 
-	    List<Product> productList = (searchText != null && !searchText.isEmpty()) 
-	            ? productService.findSearch(searchText, pageable).getContent()  // Page에서 내용만 가져옴
-	            : productService.findAll(pageable).getContent();               // Page에서 내용만 가져옴
+		// Fetch sorted and paginated product list
+		Page<Product> productPage = (searchText != null && !searchText.isEmpty()) 
+		        ? productService.findSearch(searchText, pageable)  // Fetch sorted by search text
+		        : productService.findAll(pageable);               // Fetch sorted for all products
 
-	    List<ProductDTO> productDTOs = productList.stream()
-	            .map(ProductDTO::fromEntity)
-	            .collect(Collectors.toList());
+		// Convert paginated Product list to DTOs
+		List<ProductDTO> productDTOs = productPage.getContent().stream()
+		        .map(ProductDTO::fromEntity)
+		        .collect(Collectors.toList());
+
 
 	    return ResponseEntity.ok(productDTOs);  
 	}
