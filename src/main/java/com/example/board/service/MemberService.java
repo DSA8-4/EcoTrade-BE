@@ -231,6 +231,7 @@ public class MemberService {
 	// 판매 이력 가져오기
 	@Transactional
 	public List<SalesDTO> getSalesHistory(String memberId) {
+
 		// 멤버 존재 여부 확인
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));

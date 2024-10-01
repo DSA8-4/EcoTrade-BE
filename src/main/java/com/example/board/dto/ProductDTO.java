@@ -5,6 +5,7 @@ import com.example.board.model.product.Category;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
 import com.example.board.model.product.ProductLike;
+import com.example.board.model.product.ProductStatus;
 
 import lombok.Data;
 
@@ -25,6 +26,8 @@ public class ProductDTO {
     private Category category;
     private String seller;
     private List<String> likedMembers;
+    private String status;
+    private String area;
     public static ProductDTO fromEntity(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setProductId(product.getId());
@@ -33,12 +36,14 @@ public class ProductDTO {
         dto.setPrice(product.getPrice());
         dto.setHit(product.getHit());
         dto.setHeart(product.getHeart());
-        dto.setCreatedTime(product.getCreated_time());
+        dto.setCreatedTime(product.getCreatedTime());
         dto.setImageUrls(product.getProductImages().stream()
             .map(Image::getUrl)
             .collect(Collectors.toList()));
         dto.setCategory(product.getCategory());
         dto.setSeller(product.getMember().getName());
+        dto.setStatus(product.getStatus().getDescription());
+        dto.setArea(product.getMember().getArea().name());
         List<String> likedMembers = product.getProductLikes().stream()
                 .map(productLike -> productLike.getMember().getMember_id())
                 .collect(Collectors.toList());

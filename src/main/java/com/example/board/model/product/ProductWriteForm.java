@@ -8,6 +8,9 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.board.model.member.Area;
+import com.example.board.model.member.Member;
+
 @Getter @Setter @ToString
 public class ProductWriteForm {
 	
@@ -24,14 +27,17 @@ public class ProductWriteForm {
 	private Category category;        // 상품 카테고리
 	private String member_id; // 회원 ID 추가
 	
+	private Member member;
+	
 	public static Product toProduct(ProductWriteForm productWriteForm) {
 	    Product product = new Product();
+	    Member member = new Member();
 	    product.setTitle(productWriteForm.getTitle());
 	    product.setContents(productWriteForm.getContents());
 	    product.setPrice(productWriteForm.getPrice());
 	    product.setHit(0L);
 	    product.setHeart(0L);
-	    product.setCreated_time(LocalDateTime.now());
+	    product.setCreatedTime(LocalDateTime.now());
 	    product.setCategory(productWriteForm.getCategory());
 	    return product;
 	}
