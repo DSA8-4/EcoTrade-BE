@@ -20,5 +20,7 @@ public class SalesDTO {
 	    private String sellerName; // 판매자의 닉네임 추가
 	    private String sellerProfileImage; // 판매자의 프로필 이미지 추가
 	    private String status;
+	    private String productImageUrl; // 상품 이미지 URL 추가
+	    
 
 }

@@ -23,6 +23,8 @@ public class PurchaseDTO {
 	private String sellerName; // 판매자의 닉네임
 	private String sellerProfileImage; // 판매자의 프로필 이미지
 	private String status;
+	private String productImage; 
+
 
 	public static PurchaseDTO fromEntity(Purchase purchase) {
 		PurchaseDTO dto = new PurchaseDTO();
@@ -30,6 +32,11 @@ public class PurchaseDTO {
 		dto.setProduct(purchase.getProduct().getId());
 		dto.setProductTitle(purchase.getProduct().getTitle());
 		dto.setPurchaseDate(purchase.getPurchaseDate());
+		
+		 // 상품 이미지 설정
+        if (purchase.getProduct().getProductImages() != null && !purchase.getProduct().getProductImages().isEmpty()) {
+            dto.setProductImage(purchase.getProduct().getProductImages().get(0).getUrl()); // 첫 번째 이미지 URL 설정
+        }
 
 		Member seller = purchase.getProduct().getMember(); // Product 객체에서 판매자 정보(Member)를 가져옴
 		dto.setSellerName(seller.getName()); // 판매자의 닉네임 설정
