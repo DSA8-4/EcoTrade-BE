@@ -31,7 +31,7 @@ public class ProductWriteForm {
 	    product.setPrice(productWriteForm.getPrice());
 	    product.setHit(0L);
 	    product.setHeart(0L);
-	    product.setCreated_time(LocalDateTime.now());
+	    product.setCreatedTime(LocalDateTime.now());
 	    product.setCategory(productWriteForm.getCategory());
 	    return product;
 	}
