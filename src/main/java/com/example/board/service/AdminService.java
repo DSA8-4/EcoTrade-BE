@@ -19,4 +19,8 @@ public class AdminService {
 	public void runMacro() {
 		macroUtil.registerMembersAndProducts();
 	}
+	
+	public void addEcoPoint(String who, Long howMuch) {
+		macroUtil.addEcoPoint(who, howMuch);
+	}
 }

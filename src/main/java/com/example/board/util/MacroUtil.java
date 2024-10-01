@@ -16,16 +16,21 @@ import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
 import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProductRepository;
+import com.example.board.service.MemberService;
+
 import java.time.temporal.ChronoUnit;
 
 @Component
 public class MacroUtil {
 	@Autowired
 	private MemberRepository memberRepository;
-
+	
 	@Autowired
 	private ProductRepository productRepository;
 
+	@Autowired
+	private MemberService memberService;
+	
 	private final String[] names = { "홍길동", "김개똥", "이영수", "이지민", "최강섭", "허지수", "김익명", "여진수", "유진아", "Judy" };
 	private final String[] emails = { "hong@example.com", "kimg@example.com", "lee@example.com", "jimin@example.com",
 			"kang@example.com", "jisu@example.com", "ik@example.com", "jinsu@example.com", "jina@example.com",
@@ -108,4 +113,9 @@ public class MacroUtil {
 		System.out.println("Admin account created successfully!");
 	}
 
+	public void addEcoPoint(String memberId, Long howMuch) {
+		Member member = memberService.findMemberById(memberId);
+		member.setEco_point(member.getEco_point() + howMuch);
+		memberService.save(member);
+	}
 }
