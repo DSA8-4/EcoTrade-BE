@@ -34,5 +34,14 @@ public class EcoProductPurchase {
 	
 	private String deliveryAddress;
 	
+	  @Override
+	    public String toString() {
+	        return "EcoProductPurchase{" +
+	                "id=" + id +
+	                ", ProductTitle='" + ecoProductTitle + '\'' +
+	                ", purchaseDate=" + purchaseDate +
+	                '}';
+	    }
+	
 	
 }

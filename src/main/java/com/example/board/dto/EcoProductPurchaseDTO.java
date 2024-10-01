@@ -14,14 +14,13 @@ public class EcoProductPurchaseDTO {
 	private Long ecoProduct;
 	private String productTitle;
 	private LocalDateTime purchaseDate;
-	
+
 	public static EcoProductPurchaseDTO fromEntity(EcoProductPurchase ecoPurchase) {
 		EcoProductPurchaseDTO ecoDto = new EcoProductPurchaseDTO();
 		ecoDto.setId(ecoPurchase.getId());
 		ecoDto.setEcoProduct(ecoPurchase.getEcoProduct().getEcoProductId());
 		ecoDto.setProductTitle(ecoPurchase.getEcoProduct().getTitle());
 		ecoDto.setPurchaseDate(ecoPurchase.getPurchaseDate());
-
 
 		return ecoDto;
 	}

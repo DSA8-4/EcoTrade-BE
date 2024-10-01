@@ -100,9 +100,9 @@ public class MemberService {
 		}
 		return false;
 	}
-	
+
 	public Optional<Member> findById(String memberId) {
-	    return memberRepository.findById(memberId);
+		return memberRepository.findById(memberId);
 	}
 
 	@Transactional
@@ -126,9 +126,9 @@ public class MemberService {
 		}
 		return null; // 업데이트 실패
 	}
-	
+
 	public void save(Member member) {
-	    memberRepository.save(member);
+		memberRepository.save(member);
 	}
 
 	public boolean login(String member_id, String password) {
@@ -151,50 +151,48 @@ public class MemberService {
 
 	// 프로필 이미지 업로드 로직
 	public String uploadProfileImage(String memberId, MultipartFile file) throws IOException {
-	    // 업로드 디렉토리 확인 및 생성
-	    File uploadDir = new File(this.uploadDir);
-	    if (!uploadDir.exists()) {
-	        uploadDir.mkdirs();
-	    }
+		// 업로드 디렉토리 확인 및 생성
+		File uploadDir = new File(this.uploadDir);
+		if (!uploadDir.exists()) {
+			uploadDir.mkdirs();
+		}
 
-	    // 파일 이름 생성
-	    String fileName = memberId + "-profile-image.jpg";
-	    File destinationFile = new File(uploadDir, fileName);
-	    file.transferTo(destinationFile); // 파일 저장
+		// 파일 이름 생성
+		String fileName = memberId + "-profile-image.jpg";
+		File destinationFile = new File(uploadDir, fileName);
+		file.transferTo(destinationFile); // 파일 저장
 
-	    // 회원 조회
-	    Member member = memberRepository.findById(memberId)
-	            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+		// 회원 조회
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-	    // 기존 프로필 이미지 URL이 있는 경우 삭제 (URL을 빈 문자열로 변경)
-	    if (member.getProfileImageUrl() != null) {
-	        // 기존 URL 처리 (예: 파일 삭제)
-	         File oldFile = new File(member.getProfileImageUrl());
-	         if (oldFile.exists()) {
-	             oldFile.delete(); // 기존 이미지 파일 삭제
-	         }
-	    }
+		// 기존 프로필 이미지 URL이 있는 경우 삭제 (URL을 빈 문자열로 변경)
+		if (member.getProfileImageUrl() != null) {
+			// 기존 URL 처리 (예: 파일 삭제)
+			File oldFile = new File(member.getProfileImageUrl());
+			if (oldFile.exists()) {
+				oldFile.delete(); // 기존 이미지 파일 삭제
+			}
+		}
 
-	    // Member의 프로필 이미지 URL 설정
-	    member.setProfileImageUrl(destinationFile.getAbsolutePath());
-	    memberRepository.save(member); // Member 저장
+		// Member의 프로필 이미지 URL 설정
+		member.setProfileImageUrl(destinationFile.getAbsolutePath());
+		memberRepository.save(member); // Member 저장
 
-	    return fileName;
+		return fileName;
 	}
-
 
 	@Transactional
 	public void saveProfileImage(String memberId, String imageUrl) {
-	    // Member를 DB에서 찾아서 해당 프로필 이미지 URL 저장
-	    Member member = memberRepository.findById(memberId)
-	            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+		// Member를 DB에서 찾아서 해당 프로필 이미지 URL 저장
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-	    // 프로필 이미지 URL 설정
-	    member.setProfileImageUrl(imageUrl); // 이미지 경로를 설정
+		// 프로필 이미지 URL 설정
+		member.setProfileImageUrl(imageUrl); // 이미지 경로를 설정
 
-	    memberRepository.save(member); // Member 저장
+		memberRepository.save(member); // Member 저장
 	}
-
 
 	@Transactional
 	public MemberProfileDto getMemberProfile(String memberId) {
@@ -205,7 +203,7 @@ public class MemberService {
 		String profileImagePath = member.getProfileImageUrl();
 
 		return new MemberProfileDto(member.getMember_id(), member.getName(), member.getEmail(), member.getEco_point(),
-				 profileImagePath, member.getArea());
+				profileImagePath, member.getArea());
 	}
 
 	@Transactional
@@ -233,28 +231,36 @@ public class MemberService {
 	// 판매 이력 가져오기
 	@Transactional
 	public List<SalesDTO> getSalesHistory(String memberId) {
-	    // 멤버 존재 여부 확인
-	    Member member = memberRepository.findById(memberId)
-	            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+		// 멤버 존재 여부 확인
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-	    // 판매 이력 가져오기
-	    List<Product> salesHistory = productRepository.findByMember(member);
+		// 판매 이력 가져오기
+		List<Product> salesHistory = productRepository.findByMember(member);
 
-	    return salesHistory.stream().map(product -> {
-	        // SalesDTO로 변환
-	        SalesDTO salesDTO = new SalesDTO();
-//	        salesDTO.setMember_id(product.getMember().getMember_id()); // 판매자 ID
-	        salesDTO.setProductId(product.getId());                  // 제품 ID
-	        salesDTO.setTitle(product.getTitle());                    // 제품 제목
-	        salesDTO.setPrice(product.getPrice());                    // 가격
-	        salesDTO.setContents(product.getContents());			//내용   
-	        salesDTO.setCreatedTime(product.getCreated_time());        // 생성 시간
+		return salesHistory.stream().map(product -> {
+			// SalesDTO로 변환
+			SalesDTO salesDTO = new SalesDTO();
+			salesDTO.setId(product.getId()); // 제품 ID
+			salesDTO.setTitle(product.getTitle()); // 제품 제목
+			salesDTO.setPrice(product.getPrice()); // 가격
+			salesDTO.setContents(product.getContents()); // 내용
+			salesDTO.setCreatedTime(product.getCreated_time()); // 생성 시간
 
-	        return salesDTO; // SalesDTO 반환
-	    }).collect(Collectors.toList());
+			// 판매자 정보 추가
+			salesDTO.setSellerName(product.getMember().getName()); // 판매자의 닉네임
+			salesDTO.setSellerProfileImage(product.getMember().getProfileImageUrl()); // 판매자의 프로필 이미지
+
+			// 거래 상태 추가 (null 체크)
+			if (product.getStatus() != null) {
+				salesDTO.setStatus(product.getStatus().name()); // Enum을 문자열로 변환하여 설정
+			} else {
+				salesDTO.setStatus("Unknown"); // 상태가 null일 경우 기본값 설정
+			}
+
+			return salesDTO;
+		}).collect(Collectors.toList());
 	}
-
-
 
 	// 구매 이력 가져오기
 	@Transactional
@@ -262,41 +268,35 @@ public class MemberService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
+		// 구매 이력 가져오기
 		List<Purchase> purchases = purchaseRepository.findByBuyerId(memberId);
-		return purchases.stream().map(purchase -> {
 
-			PurchaseDTO dto = new PurchaseDTO();
-			dto.setId(purchase.getId());
-			dto.setId(purchase.getProduct().getId());
-			dto.setProductTitle(purchase.getProduct().getTitle());
-			dto.setPurchaseDate(purchase.getPurchaseDate());
-			return dto;
-
-		}).collect(Collectors.toList());
+		// Purchase 엔티티를 PurchaseDTO로 변환하여 반환
+		return purchases.stream().map(PurchaseDTO::fromEntity) // fromEntity 메서드를 사용하여 변환
+				.collect(Collectors.toList());
 	}
-	
+
 	@Transactional
 	public List<EcoProductPurchaseDTO> getEcoPurchaseHistory(String memberId) {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-		List<EcoProductPurchase> purchases = ecoPurchaseRepository.findByBuyerId(memberId);
-		return purchases.stream().map(ecoPurchase -> {
+	    List<EcoProductPurchase> purchases = ecoPurchaseRepository.findByBuyerId(memberId);
+		 // purchases의 내용을 출력
+	    if (purchases.isEmpty()) {
+	        System.out.println("구매 기록이 없습니다.");  // 구매 기록이 없을 경우
+	    } else {
+	        System.out.println("구매 기록: " + purchases);  // 구매 기록을 출력
+	    }
 
-			EcoProductPurchaseDTO dto = new EcoProductPurchaseDTO();
-			dto.setId(ecoPurchase.getId());
-			dto.setId(ecoPurchase.getEcoProduct().getEcoProductId());
-			dto.setProductTitle(ecoPurchase.getEcoProductTitle());
-			dto.setPurchaseDate(ecoPurchase.getPurchaseDate());
-			return dto;
-
-		}).collect(Collectors.toList());
+	    return purchases.stream()
+	            .map(EcoProductPurchaseDTO::fromEntity)
+	            .collect(Collectors.toList());
 	}
-	
+
 	public Member findByName(String name) {
-	    return memberRepository.findByName(name)
-	            .orElseThrow(() -> new IllegalArgumentException("Member not found with name: " + name));
+		return memberRepository.findByName(name)
+				.orElseThrow(() -> new IllegalArgumentException("Member not found with name: " + name));
 	}
 
-	
 }
