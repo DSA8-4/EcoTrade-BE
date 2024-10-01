@@ -1,6 +1,7 @@
 package com.example.board.model.product;
 
 import com.example.board.model.chat.ChatRoom;
+import com.example.board.model.member.Area;
 import com.example.board.model.member.Member;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -59,7 +60,7 @@ public class Product {
     public List<ProductLike> getProductLikes() {
         return productLikes;
     }
-
+    
 	// 조회수 증가 메서드
 	public void addHit() {
 		this.hit++;

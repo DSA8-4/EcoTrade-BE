@@ -27,6 +27,7 @@ public class ProductDTO {
     private String seller;
     private List<String> likedMembers;
     private String status;
+    private String area;
     public static ProductDTO fromEntity(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setProductId(product.getId());
@@ -42,6 +43,7 @@ public class ProductDTO {
         dto.setCategory(product.getCategory());
         dto.setSeller(product.getMember().getName());
         dto.setStatus(product.getStatus().getDescription());
+        dto.setArea(product.getMember().getArea().name());
         List<String> likedMembers = product.getProductLikes().stream()
                 .map(productLike -> productLike.getMember().getMember_id())
                 .collect(Collectors.toList());
