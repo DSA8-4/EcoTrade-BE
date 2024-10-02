@@ -17,7 +17,7 @@ public class EcoProductPurchaseDTO {
 	private String productTitle;
 	private LocalDateTime purchaseDate;
 	private String productImageUrl; // 하나의 이미지 URL 추가
-
+	private String memberId;
 
 	public static EcoProductPurchaseDTO fromEntity(EcoProductPurchase ecoPurchase) {
 		EcoProductPurchaseDTO ecoDto = new EcoProductPurchaseDTO();
@@ -25,6 +25,8 @@ public class EcoProductPurchaseDTO {
 		ecoDto.setEcoProduct(ecoPurchase.getEcoProduct().getEcoProductId());
 		ecoDto.setProductTitle(ecoPurchase.getEcoProduct().getTitle());
 		ecoDto.setPurchaseDate(ecoPurchase.getPurchaseDate());
+
+		ecoDto.setMemberId(ecoPurchase.getBuyer().getMember_id());
 
 		// EcoProduct의 이미지 중 첫 번째 이미지를 가져와서 DTO에 추가
 		List<EcoProductImage> images = ecoPurchase.getEcoProduct().getEcoProductImages();
