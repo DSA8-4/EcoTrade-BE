@@ -11,6 +11,6 @@ import com.example.board.model.product.Purchase;
 
 public interface EcoProductPurchaseRepository extends JpaRepository<EcoProductPurchase, Long> {
 	
-	 @Query("SELECT p FROM Purchase p WHERE p.buyer.member_id = :memberId")
+	 @Query("SELECT p FROM EcoProductPurchase p WHERE p.buyer.member_id = :memberId")
 	    List<EcoProductPurchase> findByBuyerId(@Param("memberId") String memberId);
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.board.dto.EcoProductDTO;
+import com.example.board.dto.EcoProductPurchaseDTO;
 import com.example.board.dto.MemberProfileDto;
 import com.example.board.dto.MemberUpdateRequest;
 import com.example.board.dto.PasswordUpdateRequest;
@@ -42,7 +43,7 @@ public class MemberController {
 	private final MemberService memberService;
 	private final EcoProductService ecoProductService;
 	private final JwtTokenProvider jwtTokenProvider;
-  
+
 	public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider,
 			MemberRepository memberRepository, EcoProductService ecoProductService) {
 		this.memberService = memberService;
@@ -84,7 +85,6 @@ public class MemberController {
 				response.put("name", member.getName());
 				response.put("member_id", member.getMember_id()); // member_id를 추가로 반환
 				response.put("profileImage", member.getProfileImageUrl());
-				
 
 				return ResponseEntity.ok(response);
 			} else {
@@ -322,6 +322,27 @@ public class MemberController {
 		return ResponseEntity.ok(purchaseHistory);
 	}
 
+	@GetMapping("mypage/ecoproducts")
+	public ResponseEntity<List<EcoProductPurchaseDTO>> getEcoProductPurchaseHistory(
+			@RequestHeader("Authorization") String authorizationHeader) {
+
+		// Authorization 헤더에서 'Bearer' 접두어 제거
+		String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7)
+				: authorizationHeader;
+
+		// 토큰 검증 및 멤버 ID 확인
+		if (!jwtTokenProvider.validateToken(token)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid or expired token");
+		}
+
+		String tokenMemberId = jwtTokenProvider.getUserIdFromToken(token);
+
+		// EcoProduct 구매 내역 조회
+		List<EcoProductPurchaseDTO> ecoPurchaseHistory = memberService.getEcoPurchaseHistory(tokenMemberId);
+
+		return ResponseEntity.ok(ecoPurchaseHistory);
+	}
+
 	// 로그아웃 (JWT 기반에서는 특별한 로그아웃 처리가 필요하지 않음)
 	@PostMapping("/logout")
 	public ResponseEntity<Void> logout() {
@@ -330,24 +351,23 @@ public class MemberController {
 		return ResponseEntity.noContent().build();
 
 	}
-	
-	//에코구매내역
+
+	// 에코구매내역
 	@GetMapping("/ecoPurchase")
 	public ResponseEntity<List<EcoProductDTO>> list(
-	        @RequestParam(value = "searchText", required = false) String searchText,
-	        @RequestParam(value = "page", defaultValue = "0") int page,  
-	        @RequestParam(value = "size", defaultValue = "12") int size) { 
+			@RequestParam(value = "searchText", required = false) String searchText,
+			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "12") int size) {
 
-	    Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page, size);
 
-	    List<EcoProduct> ecoProductList = (searchText != null && !searchText.isEmpty()) 
-	            ? ecoProductService.findSearch(searchText, pageable).getContent()  // Page에서 내용만 가져옴
-	            : ecoProductService.findAll(pageable).getContent();               // Page에서 내용만 가져옴
+		List<EcoProduct> ecoProductList = (searchText != null && !searchText.isEmpty())
+				? ecoProductService.findSearch(searchText, pageable).getContent() // Page에서 내용만 가져옴
+				: ecoProductService.findAll(pageable).getContent(); // Page에서 내용만 가져옴
 
-	    List<EcoProductDTO> ecoProductDTOs = ecoProductList.stream()
-	            .map(EcoProductDTO::fromEntity)
-	            .collect(Collectors.toList());
+		List<EcoProductDTO> ecoProductDTOs = ecoProductList.stream().map(EcoProductDTO::fromEntity)
+				.collect(Collectors.toList());
 
-	    return ResponseEntity.ok(ecoProductDTOs);  
+		return ResponseEntity.ok(ecoProductDTOs);
 	}
 }

@@ -39,5 +39,7 @@ public class Purchase {
 	private LocalDateTime purchaseDate;
 	
 	private String deliveryAddress;
+	
+	private String status;
 
 }
