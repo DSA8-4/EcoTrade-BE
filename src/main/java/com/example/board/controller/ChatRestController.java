@@ -82,7 +82,8 @@ public class ChatRestController {
 		List<ChatRoomWithLastMessageDTO> chatRoomDTOs = chatRooms.stream()
 				.map(chatRoom -> ChatRoomWithLastMessageDTO.fromEntity(chatRoom, chatService.getLastMessageForChatRoom(chatRoom)))
 				.collect(Collectors.toList());
-
+		
+		log.info("chatRoomDTOs", chatRoomDTOs);
 		return ResponseEntity.ok(chatRoomDTOs);
 	}
 	
@@ -98,9 +99,9 @@ public class ChatRestController {
         }
 
         List<ChatRoom> chatRooms = chatService.getChatRoomsByProductId(productId);
-        if (chatRooms.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (chatRooms.isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         List<ChatRoomWithLastMessageDTO> chatRoomDTOs = chatRooms.stream()
                 .map((ChatRoom chatRoom) -> {
