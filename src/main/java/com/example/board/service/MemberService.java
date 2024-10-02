@@ -231,7 +231,7 @@ public class MemberService {
 	// 판매 이력 가져오기
 	@Transactional
 	public List<SalesDTO> getSalesHistory(String memberId) {
-<<<<<<< Updated upstream
+
 
 		// 멤버 존재 여부 확인
 		Member member = memberRepository.findById(memberId)
@@ -247,26 +247,8 @@ public class MemberService {
 			salesDTO.setTitle(product.getTitle()); // 제품 제목
 			salesDTO.setPrice(product.getPrice()); // 가격
 			salesDTO.setContents(product.getContents()); // 내용
-			salesDTO.setCreatedTime(product.getCreated_time()); // 생성 시간
+			salesDTO.setCreatedTime(product.getCreatedTime()); // 생성 시간
 
-=======
-		// 멤버 존재 여부 확인
-		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-
-		// 판매 이력 가져오기
-		List<Product> salesHistory = productRepository.findByMember(member);
-
-		return salesHistory.stream().map(product -> {
-			// SalesDTO로 변환
-			SalesDTO salesDTO = new SalesDTO();
-			salesDTO.setId(product.getId()); // 제품 ID
-			salesDTO.setTitle(product.getTitle()); // 제품 제목
-			salesDTO.setPrice(product.getPrice()); // 가격
-			salesDTO.setContents(product.getContents()); // 내용
-			salesDTO.setCreatedTime(product.getCreated_time()); // 생성 시간
-
->>>>>>> Stashed changes
 			// 판매자 정보 추가
 			salesDTO.setSellerName(product.getMember().getName()); // 판매자의 닉네임
 			salesDTO.setSellerProfileImage(product.getMember().getProfileImageUrl()); // 판매자의 프로필 이미지
@@ -277,14 +259,12 @@ public class MemberService {
 			} else {
 				salesDTO.setStatus("Unknown"); // 상태가 null일 경우 기본값 설정
 			}
-<<<<<<< Updated upstream
-=======
-			
+
 			 // 상품 이미지 추가 (첫 번째 이미지 URL 설정)
 	        if (product.getProductImages() != null && !product.getProductImages().isEmpty()) {
 	            salesDTO.setProductImageUrl(product.getProductImages().get(0).getUrl()); // 첫 번째 이미지 URL
 	        }
->>>>>>> Stashed changes
+
 
 			return salesDTO;
 		}).collect(Collectors.toList());
