@@ -9,13 +9,14 @@ public class ChatMessageDTO {
     private String content;
     private String sender;
     private String timestamp;
-
+    private boolean read;
     public static ChatMessageDTO fromEntity(ChatMessage chatMessage) {
         ChatMessageDTO dto = new ChatMessageDTO();
         dto.setId(chatMessage.getId());
         dto.setContent(chatMessage.getContent());
         dto.setSender(chatMessage.getSender());
         dto.setTimestamp(chatMessage.getTimestamp());
+        dto.setRead(chatMessage.isRead());
         return dto;
     }
 }
