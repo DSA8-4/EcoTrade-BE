@@ -1,28 +1,6 @@
 package com.example.board.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.example.board.dto.EcoProductPurchaseDTO;
-import com.example.board.dto.MemberProfileDto;
-import com.example.board.dto.MemberUpdateRequest;
-import com.example.board.dto.PurchaseDTO;
-import com.example.board.dto.SalesDTO;
+import com.example.board.dto.*;
 import com.example.board.model.ecoProduct.EcoProductPurchase;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
@@ -33,8 +11,18 @@ import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProductRepository;
 import com.example.board.repository.PurchaseRepository;
 import com.example.board.util.PasswordUtils;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,11 +36,6 @@ public class MemberService {
 
 	@Value("${profile.images.upload-dir:/path/to/profile-images/}")
 	private String uploadDir; // @Value 어노테이션을 사용하여 프로퍼티 값 주입
-
-//    public MemberService(MemberRepository memberRepository) {
-//        this.memberRepository = memberRepository;
-//        this.passwordEncoder = new BCryptPasswordEncoder(); // BCryptPasswordEncoder 인스턴스 생성
-//    }
 
 	@Transactional
 	public void saveMember(MemberJoinForm memberJoinForm) {

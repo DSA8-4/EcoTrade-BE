@@ -14,6 +14,7 @@ public class ChatMessage {
     private String content;
     private String sender;
     private String timestamp;
+    private boolean isRead = false;
 
     @ManyToOne
     @JoinColumn(name="chat_room_id")

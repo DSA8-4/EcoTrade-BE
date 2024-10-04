@@ -31,8 +31,6 @@ public class ChatRestController {
 	private final ProductService productService;
 	private final MemberService memberService;
 	private final JwtTokenProvider jwtTokenProvider;
-//	private final SimpMessagingTemplate messagingTemplate;
-//	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@PostMapping("rooms/createRoom")
 	public ResponseEntity<ChatRoomDTO> createRoom(@RequestBody CreateRoomRequest request,
@@ -80,7 +78,13 @@ public class ChatRestController {
 
 		List<ChatRoom> chatRooms = chatService.getChatRoomsForMember(member);
 		List<ChatRoomWithLastMessageDTO> chatRoomDTOs = chatRooms.stream()
-				.map(chatRoom -> ChatRoomWithLastMessageDTO.fromEntity(chatRoom, chatService.getLastMessageForChatRoom(chatRoom)))
+				.map(chatRoom -> {
+					ChatMessage lastMessage = chatService.getLastMessageForChatRoom(chatRoom);
+					ChatRoomWithLastMessageDTO dto = ChatRoomWithLastMessageDTO.fromEntity(chatRoom, lastMessage);
+					int unreadCount = chatService.getUnreadMessageCount(chatRoom, memberId);
+					dto.setUnreadCount(unreadCount);
+					return dto;
+				})
 				.collect(Collectors.toList());
 		
 		log.info("chatRoomDTOs", chatRoomDTOs);
@@ -98,15 +102,17 @@ public class ChatRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+		String memberId = jwtTokenProvider.getMemberIdFromToken(token);
         List<ChatRoom> chatRooms = chatService.getChatRoomsByProductId(productId);
-//        if (chatRooms.isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
 
         List<ChatRoomWithLastMessageDTO> chatRoomDTOs = chatRooms.stream()
                 .map((ChatRoom chatRoom) -> {
-                    ChatMessage lastMessage = chatService.getLastMessageForChatRoom(chatRoom);
-                    return ChatRoomWithLastMessageDTO.fromEntity(chatRoom, lastMessage);
+					ChatMessage lastMessage = chatService.getLastMessageForChatRoom(chatRoom);
+					ChatRoomWithLastMessageDTO dto = ChatRoomWithLastMessageDTO.fromEntity(chatRoom, lastMessage);
+					// Add the unread message count for the current member
+					int unreadCount = chatService.getUnreadMessageCount(chatRoom, memberId);
+					dto.setUnreadCount(unreadCount);
+					return dto;
                 })
                 .collect(Collectors.toList());
 
@@ -122,12 +128,14 @@ public class ChatRestController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
+		String memberId = jwtTokenProvider.getMemberIdFromToken(token);
 		ChatRoom chatRoom = chatService.getRoomById(roomId);
 		if (chatRoom == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 
 		List<ChatMessageDTO> messages = chatService.getMessagesForChatRoom(roomId);
+		chatService.markMessagesAsRead(chatRoom, memberId);
 		return ResponseEntity.ok(messages);
 	}
 
