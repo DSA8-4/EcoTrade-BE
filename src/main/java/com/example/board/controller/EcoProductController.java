@@ -179,10 +179,12 @@ public class EcoProductController {
 	        log.info("Setting delivery address: {}", deliveryAddress);
 	        ecoPurchase.setDeliveryAddress(deliveryAddress); // 요청된 주소를 저장
 	        
-	        ecoProduct.setStatus(EcoProductStatus.RESERVED);
+	        ecoPurchase.setStatus(EcoProductStatus.RESERVED);
+	        ecoPurchase.setEcoProductTitle(ecoProduct.getTitle());
 	        // Save the purchase
 	        ecoProductService.savePurchase(ecoPurchase);
-
+	        log.info("ecoProduct {}: ", ecoProduct);
+	        log.info("status {}: ", EcoProductStatus.RESERVED);
 	        log.info("Updating member's eco points...");
 
 	        // 구매자 포인트 차감

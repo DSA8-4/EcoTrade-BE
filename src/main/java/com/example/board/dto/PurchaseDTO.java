@@ -22,6 +22,7 @@ public class PurchaseDTO {
 
 	private String sellerName; // 판매자의 닉네임
 	private String sellerProfileImage; // 판매자의 프로필 이미지
+	private Long price;
 //	private String status;
 	private String productImage; 
 
@@ -32,7 +33,7 @@ public class PurchaseDTO {
 		dto.setProductId(purchase.getProduct().getId());
 		dto.setProductTitle(purchase.getProduct().getTitle());
 		dto.setPurchaseDate(purchase.getPurchaseDate());
-		
+		dto.setPrice(purchase.getProduct().getPrice());
 		 // 상품 이미지 설정
         if (purchase.getProduct().getProductImages() != null && !purchase.getProduct().getProductImages().isEmpty()) {
             dto.setProductImage(purchase.getProduct().getProductImages().get(0).getUrl()); // 첫 번째 이미지 URL 설정
