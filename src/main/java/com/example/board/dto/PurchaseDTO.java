@@ -15,21 +15,21 @@ import lombok.Setter;
 @Data
 public class PurchaseDTO {
 //	private String member_id;
-	private Long id;
-	private Long product;
+//	private Long id;
+	private Long productId;
 	private String productTitle;
 	private LocalDateTime purchaseDate;
 
 	private String sellerName; // 판매자의 닉네임
 	private String sellerProfileImage; // 판매자의 프로필 이미지
-	private String status;
+//	private String status;
 	private String productImage; 
 
 
 	public static PurchaseDTO fromEntity(Purchase purchase) {
 		PurchaseDTO dto = new PurchaseDTO();
-		dto.setId(purchase.getId());
-		dto.setProduct(purchase.getProduct().getId());
+//		dto.setId(purchase.getId());
+		dto.setProductId(purchase.getProduct().getId());
 		dto.setProductTitle(purchase.getProduct().getTitle());
 		dto.setPurchaseDate(purchase.getPurchaseDate());
 		
@@ -43,12 +43,12 @@ public class PurchaseDTO {
 
 		dto.setSellerProfileImage(seller.getProfileImageUrl());
 		// Product의 상태를 DTO로 설정
-	    ProductStatus productStatus = purchase.getProduct().getStatus();
-	    if (productStatus != null) {
-	        dto.setStatus(productStatus.name()); // Enum을 문자열로 변환
-	    } else {
-	        dto.setStatus("Unknown"); // 상태가 null일 경우 기본값 설정
-	    }
+//	    ProductStatus productStatus = purchase.getProduct().getStatus();
+//	    if (productStatus != null) {
+//	        dto.setStatus(productStatus.name()); // Enum을 문자열로 변환
+//	    } else {
+//	        dto.setStatus("Unknown"); // 상태가 null일 경우 기본값 설정
+//	    }
 
 		return dto;
 	}
