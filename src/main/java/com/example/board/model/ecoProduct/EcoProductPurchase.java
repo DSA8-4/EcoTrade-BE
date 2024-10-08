@@ -36,7 +36,16 @@ public class EcoProductPurchase {
 	
 	private String deliveryAddress;
 	
+
 	@Enumerated(EnumType.STRING)
 	private EcoProductStatus status;
-	
+
+  @Override
+  public String toString() {
+      return "EcoProductPurchase{" +
+              "id=" + id +
+              ", ProductTitle='" + ecoProductTitle + '\'' +
+              ", purchaseDate=" + purchaseDate +
+              '}';
+  }
 }

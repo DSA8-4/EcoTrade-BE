@@ -12,11 +12,13 @@ public class ChatRoomWithLastMessageDTO {
     private String imageUrl;
     private String timestamp;
     private String sender;
-    
+    private int unreadCount;
+
     public static ChatRoomWithLastMessageDTO fromEntity(ChatRoom chatRoom, ChatMessage lastMessage) {
         ChatRoomWithLastMessageDTO dto = new ChatRoomWithLastMessageDTO();
         dto.setId(chatRoom.getId());
         dto.setName(chatRoom.getName());
+//        dto.setUnreadCount(unreadCount);
 
         if (lastMessage != null) {
             dto.setLastMessage(lastMessage.getContent());

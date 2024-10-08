@@ -16,16 +16,21 @@ import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
 import com.example.board.repository.MemberRepository;
 import com.example.board.repository.ProductRepository;
+import com.example.board.service.MemberService;
+
 import java.time.temporal.ChronoUnit;
 
 @Component
 public class MacroUtil {
 	@Autowired
 	private MemberRepository memberRepository;
-
+	
 	@Autowired
 	private ProductRepository productRepository;
 
+	@Autowired
+	private MemberService memberService;
+	
 	private final String[] names = { "홍길동", "김개똥", "이영수", "이지민", "최강섭", "허지수", "김익명", "여진수", "유진아", "Judy" };
 	private final String[] emails = { "hong@example.com", "kimg@example.com", "lee@example.com", "jimin@example.com",
 			"kang@example.com", "jisu@example.com", "ik@example.com", "jinsu@example.com", "jina@example.com",
@@ -60,7 +65,7 @@ public class MacroUtil {
 			product.setTitle("랜덤상품 " + (i + 1));
 			product.setContents("여기에 상품 설명을 적어주세요 " + (i + 1));
 			product.setPrice(random.nextLong(1000, 100000)); // 가격 범위 설정
-			product.setCreated_time(getRandomPastDateTime()); // 랜덤 시간으로 설정
+			product.setCreatedTime(getRandomPastDateTime()); // 랜덤 시간으로 설정
 			product.setMember(memberRepository.findById("aaaa" + (random.nextInt(10) + 1)).orElse(null)); // 랜덤 회원 설정
 			product.setCategory(Category.values()[random.nextInt(Category.values().length)]); // 랜덤 카테고리 설정
 
@@ -108,4 +113,9 @@ public class MacroUtil {
 		System.out.println("Admin account created successfully!");
 	}
 
+	public void addEcoPoint(String memberId, Long howMuch) {
+		Member member = memberService.findMemberById(memberId);
+		member.setEco_point(member.getEco_point() + howMuch);
+		memberService.save(member);
+	}
 }

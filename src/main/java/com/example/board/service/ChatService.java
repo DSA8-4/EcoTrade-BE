@@ -67,6 +67,14 @@ public class ChatService {
         return chatRoomRepository.findById(id).orElse(null);
     }
 
+    public int getUnreadMessageCount(ChatRoom chatRoom, String memberId) {
+        return chatMessageRepository.countUnreadMessagesByChatRoomAndSenderNot(chatRoom, memberId);
+    }
+
+    @Transactional
+    public void markMessagesAsRead(ChatRoom chatRoom, String memberId) {
+        chatMessageRepository.markMessagesAsReadForMember(chatRoom, memberId);
+    }
     @Transactional
     public void saveMessage(ChatMessage message) {
         chatMessageRepository.save(message);

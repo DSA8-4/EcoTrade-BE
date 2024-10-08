@@ -36,7 +36,7 @@ public class ProductDTO {
         dto.setPrice(product.getPrice());
         dto.setHit(product.getHit());
         dto.setHeart(product.getHeart());
-        dto.setCreatedTime(product.getCreated_time());
+        dto.setCreatedTime(product.getCreatedTime());
         dto.setImageUrls(product.getProductImages().stream()
             .map(Image::getUrl)
             .collect(Collectors.toList()));
