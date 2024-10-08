@@ -32,4 +32,7 @@ public class EcoProduct {
     @OneToMany(mappedBy = "ecoProduct", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	private List<EcoProductImage> ecoProductImages;
+    
+    @Enumerated(EnumType.STRING)
+	private EcoProductStatus status;
 }

@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import com.example.board.model.member.Member;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,14 +36,16 @@ public class EcoProductPurchase {
 	
 	private String deliveryAddress;
 	
-	  @Override
-	    public String toString() {
-	        return "EcoProductPurchase{" +
-	                "id=" + id +
-	                ", ProductTitle='" + ecoProductTitle + '\'' +
-	                ", purchaseDate=" + purchaseDate +
-	                '}';
-	    }
-	
-	
+
+	@Enumerated(EnumType.STRING)
+	private EcoProductStatus status;
+
+  @Override
+  public String toString() {
+      return "EcoProductPurchase{" +
+              "id=" + id +
+              ", ProductTitle='" + ecoProductTitle + '\'' +
+              ", purchaseDate=" + purchaseDate +
+              '}';
+  }
 }

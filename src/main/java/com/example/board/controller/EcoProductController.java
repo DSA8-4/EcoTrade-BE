@@ -7,10 +7,12 @@ import com.example.board.dto.PurchaseDTO;
 import com.example.board.model.ecoProduct.EcoProduct;
 import com.example.board.model.ecoProduct.EcoProductImage;
 import com.example.board.model.ecoProduct.EcoProductPurchase;
+import com.example.board.model.ecoProduct.EcoProductStatus;
 import com.example.board.model.ecoProduct.EcoProductWriteForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
+import com.example.board.model.product.ProductStatus;
 import com.example.board.model.product.Purchase;
 import com.example.board.service.EcoProductService;
 import com.example.board.service.MemberService;
@@ -176,7 +178,8 @@ public class EcoProductController {
 	        // 구매자 주소 설정
 	        log.info("Setting delivery address: {}", deliveryAddress);
 	        ecoPurchase.setDeliveryAddress(deliveryAddress); // 요청된 주소를 저장
-
+	        
+	        ecoProduct.setStatus(EcoProductStatus.RESERVED);
 	        // Save the purchase
 	        ecoProductService.savePurchase(ecoPurchase);
 
@@ -200,6 +203,51 @@ public class EcoProductController {
 	    }
 	}
 	
+	    @GetMapping("/history/{member_id}")
+	    public ResponseEntity<List<EcoProductPurchase>> getEcoProductPurchaseHistory(@PathVariable("memberId") String memberId) {
+	        // 해당 ID의 사용자가 존재하는지 확인
+	        Optional<Member> memberOpt = memberService.findById(memberId);
+	        if (!memberOpt.isPresent()) {
+	            return ResponseEntity.badRequest().body(null); // 사용자 존재하지 않음
+	        }
+
+	        // 사용자 ID로 구매 내역 조회
+	        List<EcoProductPurchase> purchaseHistory = ecoProductService.getPurchaseHistoryByMemberId(memberId);
+	        return ResponseEntity.ok(purchaseHistory);
+	    }
+	    
+	    //전체내역
+	    @GetMapping("/allHistory")
+	    public ResponseEntity<List<EcoProductPurchase>> getAllEcoProductPurchases() {
+	        // 모든 EcoProductPurchase 정보를 가져옴
+	        List<EcoProductPurchase> purchaseHistory = ecoProductService.getAllEcoProductPurchases();
+	        // 구매 내역이 존재하지 않을 경우 204 No Content 반환
+	        if (purchaseHistory.isEmpty()) {
+	            return ResponseEntity.noContent().build();
+	        }
+	        // 구매 내역이 있으면 200 OK와 함께 반환
+	        return ResponseEntity.ok(purchaseHistory);
+	    }
+
 	
+	@PutMapping("/updateStatus/{productId}")
+	public ResponseEntity<String> updateEcoProductStatus(@PathVariable("id") Long id,
+			@RequestParam("status") EcoProductStatus status) {
+		try {
+			Optional<EcoProduct> ecoProductOpt = ecoProductService.findById(id);
+			if (!ecoProductOpt.isPresent()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+			}
+			
+			EcoProductPurchase ecoPurchase = new EcoProductPurchase();
+			EcoProduct ecoProduct = ecoProductOpt.get();
+			ecoPurchase.setStatus(status);
+			ecoProductService.save(ecoProduct);
+
+			return ResponseEntity.ok("Product status updated to " + status.getDescription());
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating product status.");
+		}
+	}
 
 }

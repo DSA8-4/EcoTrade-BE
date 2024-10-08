@@ -72,4 +72,13 @@ public class EcoProductService {
     public Page<EcoProduct> findAll(Pageable pageable) {
         return ecoProductRepository.findAll(pageable);
     }
+    
+ // 회원 ID로 구매 이력 조회
+    public List<EcoProductPurchase> getPurchaseHistoryByMemberId(String memberId) {
+        return ecoProductPurchaseRepository.findByBuyerId(memberId);
+    }
+    
+    public List<EcoProductPurchase> getAllEcoProductPurchases() {
+        return ecoProductPurchaseRepository.findAll();
+    }
 }

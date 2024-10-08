@@ -23,6 +23,7 @@ import com.example.board.dto.PasswordUpdateRequest;
 import com.example.board.dto.PurchaseDTO;
 import com.example.board.dto.SalesDTO;
 import com.example.board.model.ecoProduct.EcoProduct;
+import com.example.board.model.ecoProduct.EcoProductPurchase;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
