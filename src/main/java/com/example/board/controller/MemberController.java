@@ -22,6 +22,7 @@ import com.example.board.dto.PasswordUpdateRequest;
 import com.example.board.dto.PurchaseDTO;
 import com.example.board.dto.SalesDTO;
 import com.example.board.model.ecoProduct.EcoProduct;
+import com.example.board.model.ecoProduct.EcoProductPurchase;
 import com.example.board.model.member.LoginForm;
 import com.example.board.model.member.Member;
 import com.example.board.model.member.MemberJoinForm;
@@ -331,23 +332,5 @@ public class MemberController {
 
 	}
 	
-	//에코구매내역
-	@GetMapping("/ecoPurchase")
-	public ResponseEntity<List<EcoProductDTO>> list(
-	        @RequestParam(value = "searchText", required = false) String searchText,
-	        @RequestParam(value = "page", defaultValue = "0") int page,  
-	        @RequestParam(value = "size", defaultValue = "12") int size) { 
-
-	    Pageable pageable = PageRequest.of(page, size);
-
-	    List<EcoProduct> ecoProductList = (searchText != null && !searchText.isEmpty()) 
-	            ? ecoProductService.findSearch(searchText, pageable).getContent()  // Page에서 내용만 가져옴
-	            : ecoProductService.findAll(pageable).getContent();               // Page에서 내용만 가져옴
-
-	    List<EcoProductDTO> ecoProductDTOs = ecoProductList.stream()
-	            .map(EcoProductDTO::fromEntity)
-	            .collect(Collectors.toList());
-
-	    return ResponseEntity.ok(ecoProductDTOs);  
-	}
+	
 }
