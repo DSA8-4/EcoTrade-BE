@@ -239,13 +239,6 @@ public class MemberController {
 			// 정보 업데이트
 			existingMember.setName(updateRequest.getName());
 			existingMember.setEmail(updateRequest.getEmail());
-
-			// 프로필 이미지 업데이트 (단일 이미지)
-			if (updateRequest.getProfileImageUrl() != null) {
-				// 직접 URL 업데이트 로직을 수행
-				existingMember.setProfileImageUrl(member_id);
-			}
-
 			existingMember.setArea(updateRequest.getArea());
 
 			// 업데이트된 회원 정보 저장 (반환값 없이 저장)
