@@ -110,12 +110,13 @@ public class MemberController {
 
 		try {
 			// JWT 토큰에서 사용자 ID 추출
-			String memberId = jwtTokenProvider.getUserIdFromToken(token.replace("Bearer ", ""));
+			String memberId = jwtTokenProvider
+					.getMemberIdFromToken(JwtTokenProvider.extractAndValidateToken(token, jwtTokenProvider));
 
 			// 요청에서 받은 memberId와 비교 (선택 사항)
-			if (!memberId.equals(profileImageRequest.getMemberId())) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "권한이 없습니다."));
-			}
+//			if (!memberId.equals(profileImageRequest.getMemberId())) {
+//				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "권한이 없습니다."));
+//			}
 
 			// 프로필 이미지 URL 처리 (예: 저장 또는 업데이트 로직)
 			String imageUrl = profileImageRequest.getUrl();
@@ -227,6 +228,7 @@ public class MemberController {
 		try {
 			// 기존 회원 정보 불러오기
 			Optional<Member> existingMemberOpt = memberService.findById(member_id);
+			log.info("existingMemberOpt: {}", existingMemberOpt);
 			if (!existingMemberOpt.isPresent()) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 			}
