@@ -143,15 +143,16 @@ public class EcoProductController {
 	}
 
 	@PostMapping("/purchase/{id}")
-	public ResponseEntity<String> purchaseEcoProduct(@PathVariable("id") Long id,
-	                                                 @RequestHeader("Authorization") String authorizationHeader,
-	                                                 @RequestBody String deliveryAddress) {  // 주소를 RequestBody로 받음
+	public ResponseEntity<EcoProductPurchaseDTO> purchaseEcoProduct(
+	        @PathVariable("id") Long id,
+	        @RequestHeader("Authorization") String authorizationHeader,
+	        @RequestBody String deliveryAddress) {  // 주소를 RequestBody로 받음
 	    try {
 	        log.info("Extracting token...");
 	        // Extract the JWT token and validate it
 	        String token = authorizationHeader.replace("Bearer ", "");
 	        if (!jwtTokenProvider.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 	        }
 
 	        log.info("Extracting member ID from token...");
@@ -162,44 +163,47 @@ public class EcoProductController {
 	        // Find the EcoProduct
 	        Optional<EcoProduct> ecoProductOpt = ecoProductService.findById(id);
 	        if (!ecoProductOpt.isPresent()) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 	        }
 
 	        EcoProduct ecoProduct = ecoProductOpt.get();
 
+	        // 구매자 정보 조회
+	        Member buyer = memberService.findMemberById(memberId); // Get the buyer (member)
+
+	        // 포인트 확인
+	        if (buyer.getEco_point() < ecoProduct.getPrice()) {
+	            // 포인트 부족으로 인한 예외 처리
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                    .body(null); // 에러 메시지는 별도의 처리로 변경 가능
+	        }
+
 	        log.info("Creating new purchase...");
 	        // Create a new purchase
 	        EcoProductPurchase ecoPurchase = new EcoProductPurchase();
-	        Member buyer = memberService.findMemberById(memberId); // Get the buyer (member)
 	        ecoPurchase.setBuyer(buyer);
 	        ecoPurchase.setEcoProduct(ecoProduct);
 	        ecoPurchase.setPurchaseDate(LocalDateTime.now());
-
-	        // 구매자 주소 설정
 	        ecoPurchase.setDeliveryAddress(deliveryAddress); // 요청된 주소를 저장
-	        
 	        ecoPurchase.setStatus(EcoProductStatus.RESERVED);
 	        ecoPurchase.setEcoProductTitle(ecoProduct.getTitle());
+
 	        // Save the purchase
 	        ecoProductService.savePurchase(ecoPurchase);
 
 	        // 구매자 포인트 차감
-	        if (buyer.getEco_point() < ecoProduct.getPrice()) {
-	            // 포인트 부족으로 인한 예외 처리
-	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                    .body("Eco points are insufficient to complete the purchase.");
-	        }
-
-	        // 구매 가능 - 포인트 차감
 	        buyer.setEco_point(buyer.getEco_point() - ecoProduct.getPrice());
 	        memberService.saveMember(buyer);
 
-	        return ResponseEntity.ok("EcoProduct purchased successfully.");
+	        // DTO 생성 및 응답
+	        EcoProductPurchaseDTO ecoDto = EcoProductPurchaseDTO.fromEntity(ecoPurchase);
+	        return ResponseEntity.ok(ecoDto); // 구매 성공 시 DTO 반환
 	    } catch (Exception e) {
 	        log.error("Error during purchase", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during purchase.");
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	    }
 	}
+
 	
 	    @GetMapping("/history/{member_id}")
 	    public ResponseEntity<List<EcoProductPurchase>> getEcoProductPurchaseHistory(@PathVariable("memberId") String memberId) {
