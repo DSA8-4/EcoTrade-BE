@@ -78,6 +78,14 @@ public class EcoProductService {
         return ecoProductPurchaseRepository.findByBuyerId(memberId);
     }
     
+    public EcoProductPurchase getEcoProductPurchase(Long id) {
+    	return ecoProductPurchaseRepository.findById(id).get();
+    }
+    
+    public void updateEcoProductPurchase(EcoProductPurchase ecoProductPurchase) {
+    	ecoProductPurchaseRepository.save(ecoProductPurchase);
+    }
+    
     public List<EcoProductPurchase> getAllEcoProductPurchases() {
         return ecoProductPurchaseRepository.findAll();
     }

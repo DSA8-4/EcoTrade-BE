@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.example.board.model.ecoProduct.EcoProductImage;
 import com.example.board.model.ecoProduct.EcoProductPurchase;
+import com.example.board.model.ecoProduct.EcoProductStatus;
 import com.example.board.model.member.Member;
 import com.example.board.model.product.Purchase;
 
@@ -20,6 +21,7 @@ public class EcoProductPurchaseDTO {
 	private String memberId;
 	private Long ecoPoint;
 	private String address;
+	private EcoProductStatus status;
 
 	public static EcoProductPurchaseDTO fromEntity(EcoProductPurchase ecoPurchase) {
 		EcoProductPurchaseDTO ecoDto = new EcoProductPurchaseDTO();
@@ -29,6 +31,7 @@ public class EcoProductPurchaseDTO {
 		ecoDto.setPurchaseDate(ecoPurchase.getPurchaseDate());
 		ecoDto.setAddress(ecoPurchase.getDeliveryAddress());
 		ecoDto.setEcoPoint(ecoPurchase.getEcoProduct().getPrice());
+		ecoDto.setStatus(ecoPurchase.getStatus());
 
 		ecoDto.setMemberId(ecoPurchase.getBuyer().getMember_id());
 

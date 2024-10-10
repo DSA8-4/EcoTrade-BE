@@ -10,6 +10,7 @@ import com.example.board.model.ecoProduct.EcoProductImage;
 import com.example.board.model.ecoProduct.EcoProductPurchase;
 import com.example.board.model.ecoProduct.EcoProductStatus;
 import com.example.board.model.ecoProduct.EcoProductWriteForm;
+import com.example.board.model.ecoProduct.EcoPurchaseRequest;
 import com.example.board.model.member.Member;
 import com.example.board.model.product.Image;
 import com.example.board.model.product.Product;
@@ -30,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -232,21 +234,21 @@ public class EcoProductController {
 		return ResponseEntity.ok(dtoList);
 	}
 
-	@PutMapping("/updateStatus/{id}")
-	public ResponseEntity<String> updateEcoProductStatus(@PathVariable("id") Long id,
-			@RequestParam("status") EcoProductStatus status) {
+	@PutMapping("/updateStatus/{ecoProductId}")
+	public ResponseEntity<String> updateEcoProductStatus(
+			@PathVariable("ecoProductId") Long ecoProductId,
+			@RequestBody EcoPurchaseRequest ecoPurchaseRequest) {
 		try {
-			Optional<EcoProduct> ecoProductOpt = ecoProductService.findById(id);
+			Optional<EcoProduct> ecoProductOpt = ecoProductService.findById(ecoProductId);
 			if (!ecoProductOpt.isPresent()) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
 			}
 
-			EcoProductPurchase ecoPurchase = new EcoProductPurchase();
-			EcoProduct ecoProduct = ecoProductOpt.get();
-			ecoPurchase.setStatus(status);
-			ecoProductService.save(ecoProduct);
+			EcoProductPurchase ecoProductPurchase = ecoProductService.getEcoProductPurchase(ecoPurchaseRequest.getEcoPurchaseId());
+			ecoProductPurchase.setStatus(ecoPurchaseRequest.getEcoProductStatus());
+			ecoProductService.updateEcoProductPurchase(ecoProductPurchase);
 
-			return ResponseEntity.ok("Product status updated to " + status.getDescription());
+			return ResponseEntity.ok("Product status updated to " + ecoPurchaseRequest.getEcoProductStatus().getDescription());
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating product status.");
 		}
