@@ -2,6 +2,7 @@ package com.example.board.controller;
 
 import com.example.board.dto.EcoProductDTO;
 import com.example.board.dto.EcoProductPurchaseDTO;
+import com.example.board.dto.EcoProductPurchaseHistoryDTO;
 import com.example.board.dto.ProductDTO;
 import com.example.board.dto.PurchaseDTO;
 import com.example.board.model.ecoProduct.EcoProduct;
@@ -204,7 +205,7 @@ public class EcoProductController {
 	}
 
 	@GetMapping("/history/{member_id}")
-	public ResponseEntity<List<EcoProductPurchase>> getEcoProductPurchaseHistory(
+	public ResponseEntity<List<EcoProductPurchaseHistoryDTO>> getEcoProductPurchaseHistory(
 			@PathVariable("member_Id") String memberId) {
 		// 해당 ID의 사용자가 존재하는지 확인
 		Optional<Member> memberOpt = memberService.findById(memberId);
@@ -214,7 +215,10 @@ public class EcoProductController {
 
 		// 사용자 ID로 구매 내역 조회
 		List<EcoProductPurchase> purchaseHistory = ecoProductService.getPurchaseHistoryByMemberId(memberId);
-		return ResponseEntity.ok(purchaseHistory);
+	    List<EcoProductPurchaseHistoryDTO> purchaseHistoryDTOs = purchaseHistory.stream()
+	            .map(EcoProductPurchaseHistoryDTO::fromEntity)
+	            .collect(Collectors.toList());
+		return ResponseEntity.ok(purchaseHistoryDTOs);
 	}
 
 	// 전체내역
