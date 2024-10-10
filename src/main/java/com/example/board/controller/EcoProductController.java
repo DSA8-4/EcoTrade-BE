@@ -232,7 +232,7 @@ public class EcoProductController {
 		return ResponseEntity.ok(dtoList);
 	}
 
-	@PutMapping("/updateStatus/{productId}")
+	@PutMapping("/updateStatus/{id}")
 	public ResponseEntity<String> updateEcoProductStatus(@PathVariable("id") Long id,
 			@RequestParam("status") EcoProductStatus status) {
 		try {
