@@ -1,16 +1,16 @@
 package com.example.board.dto;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.example.board.model.ecoProduct.EcoProductImage;
 import com.example.board.model.ecoProduct.EcoProductPurchase;
 import com.example.board.model.ecoProduct.EcoProductStatus;
-
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class EcoProductPurchaseHistoryDTO {
+	private Long id;
 	private String title;
 	private String address;
 	private String imageUrl;
@@ -19,6 +19,7 @@ public class EcoProductPurchaseHistoryDTO {
 	
 	public static EcoProductPurchaseHistoryDTO fromEntity(EcoProductPurchase ecoPurchase) {
 		EcoProductPurchaseHistoryDTO ecoDto = new EcoProductPurchaseHistoryDTO();
+		ecoDto.setId(ecoPurchase.getEcoProduct().getEcoProductId());
 		ecoDto.setTitle(ecoPurchase.getEcoProduct().getTitle());
 		ecoDto.setBuyDate(ecoPurchase.getPurchaseDate());
 		ecoDto.setAddress(ecoPurchase.getDeliveryAddress());

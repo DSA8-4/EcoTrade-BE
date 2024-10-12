@@ -3,35 +3,19 @@ package com.example.board.controller;
 import com.example.board.dto.EcoProductDTO;
 import com.example.board.dto.EcoProductPurchaseDTO;
 import com.example.board.dto.EcoProductPurchaseHistoryDTO;
-import com.example.board.dto.ProductDTO;
-import com.example.board.dto.PurchaseDTO;
-import com.example.board.model.ecoProduct.EcoProduct;
-import com.example.board.model.ecoProduct.EcoProductImage;
-import com.example.board.model.ecoProduct.EcoProductPurchase;
-import com.example.board.model.ecoProduct.EcoProductStatus;
-import com.example.board.model.ecoProduct.EcoProductWriteForm;
-import com.example.board.model.ecoProduct.EcoPurchaseRequest;
+import com.example.board.model.ecoProduct.*;
 import com.example.board.model.member.Member;
-import com.example.board.model.product.Image;
-import com.example.board.model.product.Product;
-import com.example.board.model.product.ProductStatus;
-import com.example.board.model.product.Purchase;
 import com.example.board.service.EcoProductService;
 import com.example.board.service.MemberService;
 import com.example.board.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -208,7 +192,7 @@ public class EcoProductController {
 
 	@GetMapping("/history/{member_id}")
 	public ResponseEntity<List<EcoProductPurchaseHistoryDTO>> getEcoProductPurchaseHistory(
-			@PathVariable("member_Id") String memberId) {
+			@PathVariable("member_id") String memberId) {
 		// 해당 ID의 사용자가 존재하는지 확인
 		Optional<Member> memberOpt = memberService.findById(memberId);
 		if (!memberOpt.isPresent()) {
