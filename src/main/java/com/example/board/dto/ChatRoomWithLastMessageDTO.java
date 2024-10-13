@@ -12,6 +12,7 @@ public class ChatRoomWithLastMessageDTO {
     private String imageUrl;
     private String timestamp;
     private String sender;
+    private String otherPerson;
     private int unreadCount;
 
     public static ChatRoomWithLastMessageDTO fromEntity(ChatRoom chatRoom, ChatMessage lastMessage) {
@@ -19,7 +20,7 @@ public class ChatRoomWithLastMessageDTO {
         dto.setId(chatRoom.getId());
         dto.setName(chatRoom.getName());
 //        dto.setUnreadCount(unreadCount);
-
+        dto.setOtherPerson(chatRoom.getMember().getName());
         if (lastMessage != null) {
             dto.setLastMessage(lastMessage.getContent());
             dto.setTimestamp(lastMessage.getTimestamp());

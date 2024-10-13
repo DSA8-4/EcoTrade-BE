@@ -109,7 +109,6 @@ public class ChatRestController {
                 .map((ChatRoom chatRoom) -> {
 					ChatMessage lastMessage = chatService.getLastMessageForChatRoom(chatRoom);
 					ChatRoomWithLastMessageDTO dto = ChatRoomWithLastMessageDTO.fromEntity(chatRoom, lastMessage);
-					// Add the unread message count for the current member
 					int unreadCount = chatService.getUnreadMessageCount(chatRoom, memberId);
 					dto.setUnreadCount(unreadCount);
 					return dto;
