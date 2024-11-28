@@ -38,10 +38,8 @@ public class MacroUtil {
 
 	// 이미지 URL 배열 정의
 	private final String[] imageUrls = {
-			"https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2Fcompanyimage01.jpg?alt=media&token=20f1016a-665c-418b-814c-9161e4c861f6",
-			"https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2Fb%E2%86%92dash%E3%83%AD%E3%82%B4%E5%89%8D_6%E4%BA%BA.jpg?alt=media&token=15b47f4f-8c4c-47ff-a31a-5c1e00fc6f1e",
-			"https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2FMainBefore.webp?alt=media&token=5f1ce200-360b-453c-b18e-2bd5e5792dbc",
-			"https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2Ffeature-image---undo-git-stash.webp?alt=media&token=759c3c7b-c8c9-4cc4-8417-6ee98eddef7a" };
+			"https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2F20241013_104605.jpg?alt=media&token=64715f1c-c5b2-4fd0-b3e5-026632e3f2c2"
+				};
 
 	private Random random = new Random();
 
@@ -59,10 +57,10 @@ public class MacroUtil {
 			memberRepository.save(member);
 		}
 
-		// 200개의 랜덤 상품 등록
-		for (int i = 0; i < 200; i++) {
+		// 30개의 랜덤 상품 등록
+		for (int i = 0; i < 30; i++) {
 			Product product = new Product();
-			product.setTitle("랜덤상품 " + (i + 1));
+			product.setTitle("상품 " + (i + 1));
 			product.setContents("여기에 상품 설명을 적어주세요 " + (i + 1));
 			product.setPrice(random.nextLong(1000, 100000)); // 가격 범위 설정
 			product.setCreatedTime(getRandomPastDateTime()); // 랜덤 시간으로 설정
@@ -107,7 +105,7 @@ public class MacroUtil {
 
 		// 프로필 이미지 설정
 		admin.setProfileImageUrl(
-				"https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2Fcompanyimage01.jpg?alt=media&token=20f1016a-665c-418b-814c-9161e4c861f6");
+				"https://firebasestorage.googleapis.com/v0/b/ecotrade-530ef.appspot.com/o/images%2Fadministrator_17328413.png?alt=media&token=3d5146a3-d1f8-4118-af6a-91604cd2dcfd");
 
 		memberRepository.save(admin);
 		System.out.println("Admin account created successfully!");
